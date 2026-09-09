@@ -497,11 +497,11 @@
 
   <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
   <main>
-    <section style="position:relative;width:100%;height:min(88vh,880px);min-height:560px;overflow:hidden;background:#1F2937;font-family:'Montserrat',sans-serif;color:#F8FAFC">
+    <section data-hero="1" style="position:relative;width:100%;height:min(88vh,880px);min-height:560px;overflow:hidden;background:#1F2937;font-family:'Montserrat',sans-serif;color:#F8FAFC">
       <img src="uploads/hero.jpg" alt="FLUX Nutrition" fetchpriority="high" loading="eager" decoding="async" width="1920" height="1280" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% 50%;animation:fluxIn 1.2s ease both" />
-      <div aria-hidden="true" style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(31,41,55,.62) 0%,rgba(31,41,55,.42) 42%,rgba(31,41,55,0) 68%)"></div>
+      <div aria-hidden="true" data-hero-overlay="1" style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(31,41,55,.62) 0%,rgba(31,41,55,.42) 42%,rgba(31,41,55,0) 68%)"></div>
 
-      <div style="position:relative;z-index:2;max-width:1440px;height:100%;margin:0 auto;padding:0 clamp(22px,5vw,72px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:32px">
+      <div data-hero-inner="1" style="position:relative;z-index:2;max-width:1440px;height:100%;margin:0 auto;padding:0 clamp(22px,5vw,72px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:32px">
         <div style="max-width:520px">
           <div style="font-family:'Montserrat',sans-serif;font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:rgba(248,250,252,.72);font-weight:500;margin-bottom:clamp(18px,2.4vw,24px);animation:fluxIn .8s ease .15s both">FLUX Nutrition · Fórmulas diarias</div>
 
@@ -518,7 +518,24 @@
         </div>
       </div>
 
-      <style>@media (max-width:900px){section > div[style*="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"]{grid-template-columns:1fr!important}section img[src*="hero.jpg"]{object-position:75% 50%!important}}</style>
+      <style>
+        @media (max-width:900px){
+          [data-hero]{ height:min(78vh,760px)!important; min-height:600px!important; }
+          [data-hero] img{ object-position:60% 40%!important; }
+          [data-hero-overlay]{ background:linear-gradient(180deg,rgba(31,41,55,.35) 0%,rgba(31,41,55,.1) 30%,rgba(31,41,55,.7) 70%,rgba(31,41,55,.92) 100%)!important; }
+          [data-hero-inner]{ grid-template-columns:1fr!important; align-items:flex-end!important; padding:0 22px clamp(40px,7vh,60px)!important; }
+          [data-hero-inner] > div{ max-width:100%!important; }
+          [data-hero-inner] h1{ font-size:clamp(40px,11vw,60px)!important; letter-spacing:-.025em!important; }
+          [data-hero-inner] p{ font-size:14.5px!important; max-width:36ch!important; }
+          [data-hero-inner] button{ padding:14px 22px!important; font-size:12.5px!important; flex:1 1 auto; min-width:0; text-align:center; justify-content:center; }
+          [data-hero-inner] > div > div:first-child{ font-size:10.5px!important; letter-spacing:.2em!important; margin-bottom:14px!important; }
+          [data-hero-inner] > div > div:last-child{ font-size:10.5px!important; letter-spacing:.12em!important; margin-top:20px!important; }
+        }
+        @media (max-width:520px){
+          [data-hero]{ height:min(80vh,700px)!important; min-height:520px!important; }
+          [data-hero-inner] h1{ font-size:clamp(36px,12vw,52px)!important; }
+        }
+      </style>
     </section>
 
     <section class="flux-bg-cream" style="border-bottom:1px solid rgba(31,41,55,.06);font-family:'Montserrat',sans-serif">
