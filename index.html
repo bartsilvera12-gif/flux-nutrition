@@ -2274,7 +2274,21 @@ class Component extends DCLogic {
     }
     this.setState({ adminDraft: d, adminEditId: row.id, adminEntity: entity });
   }
-  adminSetField(field) { return (e) => { const v = e && e.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e; this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: v }) })); }; }
+  adminSetField(field) {
+    const self = this;
+    return (e) => {
+      const v = e && e.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e;
+      // Especial: si el field es _use_product_img, copiamos la imagen del producto elegido a image_url
+      if (field === '_use_product_img' && v) {
+        const img = ((self.state.adminData || {}).productImageByProduct || {})[v];
+        if (img && img.url) {
+          self.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { _use_product_img: v, image_url: img.url }) }));
+          return;
+        }
+      }
+      self.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: v }) }));
+    };
+  }
   adminSetFieldNumber(field) { return (e) => { const v = e && e.target ? e.target.value : e; this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: v === '' ? null : Number(v) }) })); }; }
   adminToggleField(field) { return () => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: !x.adminDraft[field] }) })); }
   adminToggleGoal(goalId) { return () => this.setState(x => { const cur = (x.adminDraft && x.adminDraft._goal_ids) || []; const has = cur.includes(goalId); return { adminDraft: Object.assign({}, x.adminDraft, { _goal_ids: has ? cur.filter(g => g !== goalId) : cur.concat([goalId]) }) }; }); }
@@ -2892,7 +2906,7 @@ class Component extends DCLogic {
           F.text('country', 'País', 'Argentina'),
           F.text('tagline', 'Tagline'),
           F.color('color', 'Color de acento'),
-          F.text('logo_url', 'URL del logo (opcional)'),
+          F.file('logo_url', 'Logo (opcional)'),
           F.num('sort_order', 'Orden', '0'),
           F.tog('active', 'Estado', 'Activa', 'Pausada')
         ];
@@ -2937,7 +2951,8 @@ class Component extends DCLogic {
           F.text('kind', 'Tipo (apellido)', 'Complejo B · Nootrópico · Aminoácido'),
           F.area('description', 'Descripción *', 'Metabolismo energético y sistema nervioso.'),
           F.color('color', 'Color de swatch'),
-          F.text('image_url', 'URL imagen'),
+          F.file('image_url', 'Imagen (podés reutilizar la de un producto)'),
+          F.sel('_use_product_img', 'O tomar de un producto', [{ value:'', label:'— No, subir propia —' }].concat((AD.products||[]).map(p => ({ value:p.id, label:p.name })))),
           F.num('sort_order', 'Orden'),
           F.tog('active', 'Activo', 'Activo', 'Pausado')
         ];
@@ -2946,7 +2961,7 @@ class Component extends DCLogic {
           F.text('slug', 'Slug', 'rutina-energia'),
           F.sel('time_label', 'Momento *', timeOpts),
           F.area('description', 'Descripción'),
-          F.text('image_url', 'URL imagen'),
+          F.file('image_url', 'Imagen lifestyle'),
           F.num('total_price', 'Precio combo (Gs)'),
           F.num('savings', 'Ahorro vs. suelto (Gs)'),
           F.num('sort_order', 'Orden'),
@@ -2957,7 +2972,7 @@ class Component extends DCLogic {
           F.text('author_name', 'Autor *', 'Camila R.'),
           F.text('author_meta', 'Meta', 'Essential · 4 meses de uso'),
           F.sel('product_id', 'Producto relacionado', [{ value:'', label:'— Ninguno —' }].concat((AD.products||[]).map(p => ({ value:p.id, label:p.name })))),
-          F.text('avatar_url', 'URL avatar'),
+          F.file('avatar_url', 'Avatar'),
           F.num('rating', 'Rating (1-5)'),
           F.num('sort_order', 'Orden'),
           F.tog('approved', 'Aprobado', 'Aprobado', 'Pendiente'),
