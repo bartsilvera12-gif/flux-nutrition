@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  window.SUPABASE_URL = 'https://api.neura.com.py';
+  window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc0MTAxNDYxLCJleHAiOjE5MzE3ODE0NjF9.7_wAph8IolPMXtgfpezSwS5XR62IdD__qhqCywLDp3Q';
+  window.fluxSupabase = window.supabase && window.supabase.createClient
+    ? window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, { db: { schema: 'flux' }, auth: { persistSession: true, autoRefreshToken: true } })
+    : null;
+</script>
 </head>
 <body>
 <x-dc>
@@ -1113,6 +1121,33 @@
   </sc-if>
 
   <sc-if value="{{ isAdmin }}">
+    <sc-if value="{{ !adminAuthed }}">
+      <main style="min-height:100vh;background:#F5F5F0;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Montserrat',sans-serif">
+        <form onSubmit="{{ submitLogin }}" style="width:100%;max-width:400px;background:#fff;border:1px solid rgba(31,41,55,.08);border-radius:20px;padding:36px 32px;box-shadow:0 30px 60px -40px rgba(31,41,55,.35);display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+            <div style="width:38px;height:38px;background:#C3D9AB;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#1F2937;font-weight:700">A</div>
+            <div>
+              <div style="font-family:'Montserrat';font-size:15px;font-weight:600;color:#1F2937">Admin FLUX</div>
+              <div style="font-family:'Montserrat';font-size:12px;color:#6B7280">Ingresá con tu cuenta</div>
+            </div>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">Email</span>
+            <input type="email" value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" placeholder="admin@flux.com" style="border:1px solid rgba(31,41,55,.14);background:#F8FAFC;border-radius:10px;padding:12px 14px;font-size:14px;outline:none;font-family:'Montserrat',sans-serif" style-focus="border-color:#C9A7FF;background:#fff" />
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">Contraseña</span>
+            <input type="password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" placeholder="••••••••" style="border:1px solid rgba(31,41,55,.14);background:#F8FAFC;border-radius:10px;padding:12px 14px;font-size:14px;outline:none;font-family:'Montserrat',sans-serif" style-focus="border-color:#C9A7FF;background:#fff" />
+          </label>
+          <sc-if value="{{ authError }}">
+            <div style="background:#FDECEC;border:1px solid #F5C6C6;color:#B83A6B;font-family:'Montserrat';font-size:12.5px;padding:10px 12px;border-radius:8px">{{ authError }}</div>
+          </sc-if>
+          <button type="submit" onClick="{{ submitLogin }}" style="background:#1F2937;color:#fff;border:0;border-radius:10px;padding:14px;font-family:'Montserrat';font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer" style-hover="background:#C3D9AB;color:#1F2937">{{ loginBtnLabel }}</button>
+          <button type="button" onClick="{{ goHome }}" style="background:none;border:0;color:#6B7280;font-family:'Montserrat';font-size:12px;cursor:pointer;padding:4px" style-hover="color:#1F2937">← Volver a la tienda</button>
+        </form>
+      </main>
+    </sc-if>
+    <sc-if value="{{ adminAuthed }}">
   <main style="min-height:100vh;background:#F5F5F0;display:grid;grid-template-columns:260px minmax(0,1fr);font-family:'Montserrat',sans-serif" data-admin-grid="1">
     <aside style="background:#1F2937;color:#F8FAFC;padding:26px 22px;display:flex;flex-direction:column;gap:24px;position:sticky;top:0;height:100vh;overflow-y:auto">
       <div style="display:flex;align-items:center;gap:10px;padding-bottom:20px;border-bottom:1px solid rgba(248,250,252,.14)">
@@ -1130,8 +1165,10 @@
           </button>
         </sc-for>
       </nav>
-      <div style="margin-top:auto;padding-top:20px;border-top:1px solid rgba(248,250,252,.14);display:flex;flex-direction:column;gap:8px">
+      <div style="margin-top:auto;padding-top:20px;border-top:1px solid rgba(248,250,252,.14);display:flex;flex-direction:column;gap:6px">
+        <div style="font-family:'Montserrat';font-size:11px;color:rgba(248,250,252,.5);padding:0 12px">{{ adminAuthName }}</div>
         <button onClick="{{ goHome }}" style="text-align:left;background:none;border:0;padding:10px 12px;border-radius:6px;color:rgba(248,250,252,.6);font-family:'Montserrat';font-size:12.5px;cursor:pointer" style-hover="color:#F8FAFC">← Volver a la tienda</button>
+        <button onClick="{{ logout }}" style="text-align:left;background:none;border:0;padding:10px 12px;border-radius:6px;color:rgba(248,250,252,.6);font-family:'Montserrat';font-size:12.5px;cursor:pointer" style-hover="color:#F8FAFC">Cerrar sesión</button>
       </div>
       <style>[class="is-active"], button.is-active { background:rgba(248,250,252,.1)!important; color:#F8FAFC!important; }</style>
     </aside>
@@ -1248,6 +1285,7 @@
       <style>@media (max-width:900px){[data-admin-grid]{grid-template-columns:1fr!important}[data-admin-grid] > aside{position:relative!important;height:auto!important}}</style>
     </section>
   </main>
+    </sc-if>
   </sc-if>
 
   <sc-if value="{{ isCat }}">
@@ -1929,6 +1967,7 @@ class Component extends DCLogic {
     favs:[], quizStep:0, quizAns:[], quick:null, qty:1, gallery:0, openBlock:'descripcion',
     catQ:'', goal:'todos', catFilter:'todas', brandFilter:'todas', sort:'destacados', maxPrice:350000, onlyPromo:false, onlyStock:false,
     adminBrands: null, adminEditId: null, adminSection:'marcas', adminDraft: null,
+    authUser:null, authChecked:false, authLoading:false, authError:'', loginEmail:'', loginPass:'',
     filtersOpen:false, tIdx:0, news:'', newsOk:false, toast:'', pay:'transfer',
     form:{ nombre:'', apellido:'', tel:'', email:'', doc:'', dir:'', ciudad:'', ref:'' },
     orderId:''
@@ -2042,7 +2081,32 @@ class Component extends DCLogic {
     run();
     setTimeout(run, 400);
   }
-  componentDidMount() { this.boot(); }
+  componentDidMount() { this.boot(); this.initAuth(); }
+  initAuth() {
+    const sb = window.fluxSupabase; if (!sb) { this.setState({ authChecked:true }); return; }
+    sb.auth.getSession().then(({ data }) => this.applySession(data && data.session)).catch(() => this.setState({ authChecked:true }));
+    this._authSub = sb.auth.onAuthStateChange((_ev, session) => this.applySession(session));
+  }
+  applySession(session) {
+    const sb = window.fluxSupabase;
+    if (!session || !session.user) { this.setState({ authUser:null, authChecked:true }); return; }
+    sb.from('admin_users').select('id,email,full_name,role,active').eq('email', session.user.email).eq('active', true).maybeSingle()
+      .then(({ data, error }) => {
+        if (error || !data) { sb.auth.signOut(); this.setState({ authUser:null, authChecked:true, authError:'Este usuario no tiene acceso al panel.' }); return; }
+        this.setState({ authUser:data, authChecked:true, authError:'' });
+      });
+  }
+  doLogin() {
+    const sb = window.fluxSupabase; if (!sb) return;
+    const email = (this.state.loginEmail || '').trim(); const password = this.state.loginPass || '';
+    if (!email || !password) { this.setState({ authError:'Ingresá email y contraseña.' }); return; }
+    this.setState({ authLoading:true, authError:'' });
+    sb.auth.signInWithPassword({ email, password }).then(({ error }) => {
+      if (error) this.setState({ authLoading:false, authError: error.message || 'No pudimos ingresar.' });
+      else this.setState({ authLoading:false, loginPass:'' });
+    });
+  }
+  doLogout() { const sb = window.fluxSupabase; if (sb) sb.auth.signOut(); this.setState({ authUser:null }); this.nav('home'); }
   componentDidUpdate() { this.observeReveals(); this.fitTitle(); }
   componentWillUnmount() {
     window.removeEventListener('scroll', this._onScroll);
@@ -2192,6 +2256,12 @@ class Component extends DCLogic {
 
     return {
       isHome:s.screen === 'home', isCat:s.screen === 'cat', isPDP:s.screen === 'pdp', isAbout:s.screen === 'about', isFaq:s.screen === 'faq', isAdmin:s.screen === 'admin', isPrivacy:s.screen === 'privacy',
+      adminAuthed: !!s.authUser, adminAuthChecked: s.authChecked, adminAuthName: s.authUser ? (s.authUser.full_name || s.authUser.email) : '',
+      loginEmail:s.loginEmail, loginPass:s.loginPass, authError:s.authError, authLoading:s.authLoading, loginBtnLabel: s.authLoading ? 'Ingresando…' : 'Ingresar',
+      onLoginEmail: e => this.setState({ loginEmail: e.target.value }),
+      onLoginPass: e => this.setState({ loginPass: e.target.value }),
+      submitLogin: () => this.doLogin(),
+      logout: () => this.doLogout(),
       waOpacity: s.footerVisible ? 0 : 1,
       waPointer: s.footerVisible ? 'none' : 'auto',
       waTranslate: s.footerVisible ? '20px' : '0',
