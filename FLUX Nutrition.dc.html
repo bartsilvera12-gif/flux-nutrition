@@ -292,8 +292,10 @@
     section[style*="padding:clamp(70px,9vw,120px) 0"] { padding: clamp(48px,10vw,80px) 0 !important; }
 
     /* Grids con 3-4 columnas fijas → auto-fit para mobile */
-    [data-goal-grid] { grid-template-columns: repeat(2,1fr) !important; grid-auto-rows: minmax(180px,auto) !important; }
-    [data-goal-grid] > button { grid-column: span 2 !important; grid-row: span 1 !important; height: 200px; }
+    [data-goal-grid] { grid-template-columns: 1fr !important; grid-auto-rows: 160px !important; }
+    [data-goal-grid] > button { grid-column: span 1 !important; grid-row: span 1 !important; height: 160px; }
+    [data-goal-grid] > button img { width: 44% !important; right: -4% !important; }
+    [data-goal-grid] > button > div:last-child { font-size: 22px !important; }
 
     /* About page grid manifesto */
     [data-about-grid] { grid-template-columns: 1fr !important; }
@@ -318,8 +320,11 @@
     [data-brand-hero] { grid-template-columns: 1fr !important; grid-template-rows: auto 320px !important; min-height: auto !important; }
     [data-brand-hero] > div:first-child { padding: 60px 24px !important; }
 
-    /* Rutinas ScrollStack: quitar sticky en mobile */
+    /* Rutinas ScrollStack: quitar sticky en mobile, cap altura de imagen */
     .flux-stack-card { position: relative !important; top: auto !important; margin-bottom: 20px !important; min-height: auto !important; }
+    .flux-stack-media { max-height: 260px !important; aspect-ratio: 16/10 !important; }
+    .flux-stack-media img { object-position: center !important; }
+    .flux-stack-card > div:nth-child(2) { padding: 20px !important; }
 
     /* Testimonial 3 columns → 2 */
     .flux-testi-wrap { grid-template-columns: repeat(2,minmax(0,1fr)) !important; max-height: 640px !important; }
@@ -352,8 +357,8 @@
 
   @media (max-width: 640px) {
     /* Everything → single column */
-    [data-goal-grid] { grid-template-columns: 1fr !important; grid-auto-rows: 220px !important; }
-    [data-goal-grid] > button { grid-column: span 1 !important; height: 220px; }
+    [data-goal-grid] { grid-template-columns: 1fr !important; grid-auto-rows: 140px !important; }
+    [data-goal-grid] > button { grid-column: span 1 !important; height: 140px; }
 
     [data-about-grid] { gap: 32px !important; }
 
