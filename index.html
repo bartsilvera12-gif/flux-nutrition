@@ -11,6 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link rel="preload" as="image" href="uploads/hero.jpg" fetchpriority="high" />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   html, body { margin:0; padding:0; background:#F8FAFC; color:#1F2937; font-family:'Montserrat',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
@@ -486,7 +487,7 @@
   <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
   <main>
     <section style="position:relative;width:100%;height:min(88vh,880px);min-height:560px;overflow:hidden;background:#1F2937;font-family:'Montserrat',sans-serif;color:#F8FAFC">
-      <img src="uploads/hero.jpg" alt="FLUX Nutrition" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% 50%;animation:fluxIn 1.2s ease both" />
+      <img src="uploads/hero.jpg" alt="FLUX Nutrition" fetchpriority="high" loading="eager" decoding="async" width="1920" height="1280" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% 50%;animation:fluxIn 1.2s ease both" />
       <div aria-hidden="true" style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(31,41,55,.62) 0%,rgba(31,41,55,.42) 42%,rgba(31,41,55,0) 68%)"></div>
 
       <div style="position:relative;z-index:2;max-width:1440px;height:100%;margin:0 auto;padding:0 clamp(22px,5vw,72px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:32px">
