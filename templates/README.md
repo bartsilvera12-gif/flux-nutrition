@@ -45,6 +45,18 @@ Instancia Supabase (proyecto)
 | `{{TENANT_ADMIN}}` | `is_flux_admin` | Nombre de la función admin en `private` |
 | `{{BUCKET}}` | `flux-product-images` | Bucket público del tenant — **debe ser globalmente único** (namespace: `<tenant>-<uso>`). `storage.objects` es una tabla compartida por toda la instancia. |
 
+## Grupos de tablas del tenant
+
+Cada tabla del tenant cae en uno de estos 3 grupos. Completar los arrays en el template (`ARRAY['...','...']`) según corresponda.
+
+| Grupo | Anon | Auth normal | Admin | Ejemplo |
+|---|---|---|---|---|
+| **PUBLIC_TABLES** | SELECT filtrado (`active IS TRUE`, hijos gateados por padre) | igual que anon | CRUD completo | `brands`, `categories`, `products`, `ingredients`, `testimonials` |
+| **ADMIN_CRUD_TABLES** | nada | nada | CRUD completo | `orders`, `customers`, `payments`, `settings` |
+| **ADMIN_READONLY_TABLES** | nada | nada | solo SELECT (escrituras vía backend/service_role) | `admin_users`, `audit_log` |
+
+El template ya trae fijo el grupo READONLY (`admin_users` + `audit_log`) porque son el estándar Neura. Los otros dos grupos se completan por tenant.
+
 ## Modelo de seguridad
 
 ```
