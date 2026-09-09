@@ -351,8 +351,9 @@
     footer p { max-width: 100% !important; }
     footer > div { padding-left: 22px !important; padding-right: 22px !important; }
 
-    /* Featured products grid → 2 col mobile */
-    section > div > div[style*="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"] > article { min-width: 0; }
+    /* Featured products grid → 1 col mobile (una card a la vez) */
+    section > div > div[style*="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"] { grid-template-columns: 1fr !important; }
+    section > div > div[style*="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"] > article { min-width: 0; max-width: 100%; }
   }
 
   @media (max-width: 640px) {
@@ -2014,7 +2015,7 @@ class Component extends DCLogic {
     window.addEventListener('resize', this._onResize);
     this.setState({ w: window.innerWidth });
     this._t = setInterval(() => this.setState(s => ({ tIdx:(s.tIdx + 1) % 4 })), 6500);
-    this._feat = setInterval(() => this.setState(s => ({ featIdx:((s.featIdx || 0) + 1) % 4 })), 5000);
+    // Auto-rotate desactivado — el usuario controla con las flechas ← →
     this._car = setInterval(() => this.setState(s => s.carPaused ? {} : ({ carIdx: ((s.carIdx || 0) + 1) % 8 })), 3000);
     this.observeReveals();
     this.fitTitle();
