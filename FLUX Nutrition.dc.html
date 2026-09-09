@@ -1249,7 +1249,7 @@
         <aside style="position:fixed;z-index:121;top:0;right:0;bottom:0;width:min(94vw,540px);background:#FFFFFF;padding:30px 28px;display:flex;flex-direction:column;gap:22px;overflow-y:auto;box-shadow:-24px 0 60px -20px rgba(31,41,55,.4);animation:fluxIn .3s ease both">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
             <div>
-              <div style="font-family:'Montserrat';font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:6px">{{ adminIsNew ? 'Nuevo' : 'Editar' }} · {{ adminEntitySingular }}</div>
+              <div style="font-family:'Montserrat';font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:6px">{{ adminModeLabel }} · {{ adminEntitySingular }}</div>
               <h2 style="margin:0;font-family:'Montserrat';font-size:22px;font-weight:600;letter-spacing:-.015em;color:#1F2937">{{ adminDraftTitle }}</h2>
             </div>
             <button type="button" onClick="{{ cancelDraft }}" style="background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:#6B7280;padding:0" style-hover="color:#1F2937">×</button>
@@ -1325,7 +1325,7 @@
 
           <div style="margin-top:auto;display:flex;gap:10px;padding-top:20px;border-top:1px solid rgba(31,41,55,.08)">
             <button type="button" onClick="{{ cancelDraft }}" style="flex:1;background:transparent;color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:6px;padding:14px;font-family:'Montserrat';font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#1F2937">Cancelar</button>
-            <button type="button" onClick="{{ saveDraft }}" style="flex:1;background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:14px;font-family:'Montserrat';font-size:13px;font-weight:600;letter-spacing:.04em;cursor:pointer" style-hover="background:#C3D9AB;color:#1F2937">{{ adminIsNew ? 'Crear' : 'Guardar cambios' }}</button>
+            <button type="button" onClick="{{ saveDraft }}" style="flex:1;background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:14px;font-family:'Montserrat';font-size:13px;font-weight:600;letter-spacing:.04em;cursor:pointer" style-hover="background:#C3D9AB;color:#1F2937">{{ adminSaveLabel }}</button>
           </div>
         </aside>
       </sc-if>
@@ -2921,6 +2921,8 @@ class Component extends DCLogic {
           adminDrawerFields: drawerFields,
           adminEditing: !!s.adminDraft,
           adminIsNew: s.adminEditId === '__new__',
+          adminSaveLabel: s.adminEditId === '__new__' ? 'Crear' : 'Guardar cambios',
+          adminModeLabel: s.adminEditId === '__new__' ? 'Nuevo' : 'Editar',
           adminDraftTitle: draftTitle,
           adminNewRow: () => self.adminNewRow(),
           cancelDraft: () => self.cancelAdminDraft(),
