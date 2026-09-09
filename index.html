@@ -1123,7 +1123,7 @@
   <sc-if value="{{ isAdmin }}">
     <sc-if value="{{ !adminAuthed }}">
       <main style="min-height:100vh;background:#F5F5F0;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Montserrat',sans-serif">
-        <form onSubmit="{{ submitLogin }}" style="width:100%;max-width:400px;background:#fff;border:1px solid rgba(31,41,55,.08);border-radius:20px;padding:36px 32px;box-shadow:0 30px 60px -40px rgba(31,41,55,.35);display:flex;flex-direction:column;gap:18px">
+        <div style="width:100%;max-width:400px;background:#fff;border:1px solid rgba(31,41,55,.08);border-radius:20px;padding:36px 32px;box-shadow:0 30px 60px -40px rgba(31,41,55,.35);display:flex;flex-direction:column;gap:18px">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
             <div style="width:38px;height:38px;background:#C3D9AB;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#1F2937;font-weight:700">A</div>
             <div>
@@ -1142,9 +1142,9 @@
           <sc-if value="{{ authError }}">
             <div style="background:#FDECEC;border:1px solid #F5C6C6;color:#B83A6B;font-family:'Montserrat';font-size:12.5px;padding:10px 12px;border-radius:8px">{{ authError }}</div>
           </sc-if>
-          <button type="submit" onClick="{{ submitLogin }}" style="background:#1F2937;color:#fff;border:0;border-radius:10px;padding:14px;font-family:'Montserrat';font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer" style-hover="background:#C3D9AB;color:#1F2937">{{ loginBtnLabel }}</button>
+          <button type="button" onClick="{{ submitLogin }}" style="background:#1F2937;color:#fff;border:0;border-radius:10px;padding:14px;font-family:'Montserrat';font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer" style-hover="background:#C3D9AB;color:#1F2937">{{ loginBtnLabel }}</button>
           <button type="button" onClick="{{ goHome }}" style="background:none;border:0;color:#6B7280;font-family:'Montserrat';font-size:12px;cursor:pointer;padding:4px" style-hover="color:#1F2937">← Volver a la tienda</button>
-        </form>
+        </div>
       </main>
     </sc-if>
     <sc-if value="{{ adminAuthed }}">
@@ -2097,14 +2097,17 @@ class Component extends DCLogic {
       });
   }
   doLogin() {
-    const sb = window.fluxSupabase; if (!sb) return;
+    const sb = window.fluxSupabase;
+    if (!sb) { this.setState({ authError:'Supabase no cargó. Verificá conexión.' }); return; }
     const email = (this.state.loginEmail || '').trim(); const password = this.state.loginPass || '';
     if (!email || !password) { this.setState({ authError:'Ingresá email y contraseña.' }); return; }
     this.setState({ authLoading:true, authError:'' });
-    sb.auth.signInWithPassword({ email, password }).then(({ error }) => {
-      if (error) this.setState({ authLoading:false, authError: error.message || 'No pudimos ingresar.' });
-      else this.setState({ authLoading:false, loginPass:'' });
-    });
+    sb.auth.signInWithPassword({ email, password })
+      .then(({ error }) => {
+        if (error) this.setState({ authLoading:false, authError: error.message || 'No pudimos ingresar.' });
+        else this.setState({ authLoading:false, loginPass:'' });
+      })
+      .catch(err => this.setState({ authLoading:false, authError: 'Error de red: ' + (err && err.message ? err.message : err) }));
   }
   doLogout() { const sb = window.fluxSupabase; if (sb) sb.auth.signOut(); this.setState({ authUser:null }); this.nav('home'); }
   componentDidUpdate() { this.observeReveals(); this.fitTitle(); }
