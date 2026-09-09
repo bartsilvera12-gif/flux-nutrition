@@ -343,6 +343,8 @@
 
     /* Footer 4-col → 2-col */
     footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"] { grid-template-columns: 1fr 1fr !important; gap: 30px !important; }
+    footer p { max-width: 100% !important; }
+    footer > div { padding-left: 22px !important; padding-right: 22px !important; }
 
     /* Featured products grid → 2 col mobile */
     section > div > div[style*="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"] > article { min-width: 0; }
@@ -362,8 +364,11 @@
     .flux-testi-wrap { grid-template-columns: 1fr !important; max-height: 520px !important; }
     .flux-testi-col.up-slow { display: none !important; }
 
-    footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"] { grid-template-columns: 1fr !important; }
-    footer > div > div[style*="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between"] { flex-direction: column !important; align-items: flex-start !important; }
+    footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"] { grid-template-columns: 1fr !important; gap: 24px !important; }
+    footer > div > div[style*="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between"] { flex-direction: column !important; align-items: flex-start !important; gap: 14px !important; }
+    footer img[alt="FLUX NUTRITION by FIVA"] { height: 40px !important; }
+    footer p { font-size: 13px !important; line-height: 1.55 !important; }
+    footer a { font-size: 13px !important; }
 
     /* Hero title: reducir para no cortar */
     section h1[style*="font-size:clamp(48px,7vw,96px)"] { font-size: clamp(38px,10vw,64px) !important; }
