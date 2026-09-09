@@ -273,8 +273,13 @@ CREATE POLICY "admin select audit"
   USING ((SELECT private.is_flux_admin()));
 
 -- ---------------------------------------------------------------------
--- 11. Storage — bucket product-images
+-- 11. Storage — bucket product-images (forzado a Public por script)
 -- ---------------------------------------------------------------------
+-- Asegura la existencia y estado Public del bucket (idempotente)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('product-images', 'product-images', TRUE)
+ON CONFLICT (id) DO UPDATE SET public = TRUE;
+
 -- Cleanup total
 DROP POLICY IF EXISTS "public read product images"    ON storage.objects;
 DROP POLICY IF EXISTS "admins upload product images"  ON storage.objects;
@@ -320,8 +325,21 @@ CREATE POLICY "admin delete product images"
     AND (SELECT private.is_flux_admin())
   );
 
+-- ---------------------------------------------------------------------
+-- 12. SEQUENCES — grants selectivos (solo si alguna tabla usa SERIAL/nextval)
+-- ---------------------------------------------------------------------
+-- El schema FLUX usa gen_random_uuid() en todas las PKs → no hace falta
+-- otorgar USAGE en sequences para el flujo normal.
+--
+-- Si en el futuro se agrega una tabla con SERIAL/BIGSERIAL, habilitar puntualmente:
+--   GRANT USAGE ON SEQUENCE flux.<tabla>_id_seq TO authenticated;
+-- (No abrir USAGE global — mantener least-privilege.)
+
 -- =====================================================================
--- Notas de uso:
+-- Notas operativas:
+--
+-- CONFIGURACIÓN MANUAL EN DASHBOARD (una sola vez):
+--   Data API → Exposed schemas: agregar `flux`; NO agregar `private`.
 --
 -- CREAR NUEVOS ADMINS: no se puede desde el panel. Opciones:
 --   a) Dashboard → Authentication → Users → Add user (crea auth.users)
@@ -332,9 +350,52 @@ CREATE POLICY "admin delete product images"
 -- REGISTRAR EVENTOS EN audit_log:
 --   Vía trigger SECURITY DEFINER en las tablas que quieras auditar,
 --   o desde un backend con service_role.
---
--- Verificación:
---   SELECT policyname, cmd, roles FROM pg_policies WHERE schemaname='flux' ORDER BY tablename, cmd;
---   SELECT has_table_privilege('authenticated', 'flux.admin_users', 'INSERT');  -- debe ser false
---   SELECT has_table_privilege('authenticated', 'flux.audit_log',   'INSERT');  -- debe ser false
+-- =====================================================================
+
+
+-- =====================================================================
+-- SECURITY CHECKS — correr después del pack; verifican el hardening
+-- =====================================================================
+
+-- 1) Tablas del schema flux sin RLS (debe ser 0 filas)
+SELECT schemaname, tablename
+  FROM pg_tables
+ WHERE schemaname = 'flux'
+   AND rowsecurity IS FALSE;
+
+-- 2) Grants de escritura al anon sobre flux (debe ser 0 filas)
+SELECT table_schema, table_name, privilege_type
+  FROM information_schema.role_table_grants
+ WHERE table_schema = 'flux'
+   AND grantee      = 'anon'
+   AND privilege_type IN ('INSERT','UPDATE','DELETE','TRUNCATE');
+
+-- 3) authenticated NO puede administrar admin_users (esperado: false | false | false)
+SELECT
+  has_table_privilege('authenticated', 'flux.admin_users', 'INSERT') AS can_insert_admin,
+  has_table_privilege('authenticated', 'flux.admin_users', 'UPDATE') AS can_update_admin,
+  has_table_privilege('authenticated', 'flux.admin_users', 'DELETE') AS can_delete_admin;
+
+-- 4) authenticated NO puede escribir audit_log (esperado: false | false | false)
+SELECT
+  has_table_privilege('authenticated', 'flux.audit_log', 'INSERT') AS can_insert_audit,
+  has_table_privilege('authenticated', 'flux.audit_log', 'UPDATE') AS can_update_audit,
+  has_table_privilege('authenticated', 'flux.audit_log', 'DELETE') AS can_delete_audit;
+
+-- 5) Funciones ejecutables por anon en flux (debe ser 0 filas — todo cerrado)
+SELECT n.nspname AS schema, p.proname AS function
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+ WHERE n.nspname = 'flux'
+   AND has_function_privilege('anon', p.oid, 'EXECUTE');
+
+-- 6) Bucket product-images marcado como Public (esperado: t)
+SELECT id, public FROM storage.buckets WHERE id = 'product-images';
+
+-- 7) Recuento de policies por tabla en flux (sanity — debe haber ≥1 por tabla)
+SELECT tablename, count(*) AS policies
+  FROM pg_policies
+ WHERE schemaname = 'flux'
+ GROUP BY tablename
+ ORDER BY tablename;
 -- =====================================================================
