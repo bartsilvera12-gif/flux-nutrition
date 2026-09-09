@@ -1181,107 +1181,153 @@
           <div style="font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:8px">Panel</div>
           <h1 style="margin:0;font-family:'Montserrat';font-weight:600;font-size:clamp(24px,3vw,34px);letter-spacing:-.02em;color:#1F2937">{{ adminSectionLabel }}</h1>
         </div>
-        <sc-if value="{{ adminOnMarcas }}">
-          <button onClick="{{ adminNewBrand }}" style="background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:12px 22px;font-family:'Montserrat';font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s" style-hover="background:#C3D9AB;color:#1F2937">+ Nueva marca</button>
-        </sc-if>
+        <button type="button" onClick="{{ adminNewRow }}" style="background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:12px 22px;font-family:'Montserrat';font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s" style-hover="background:#C3D9AB;color:#1F2937">{{ adminNewLabel }}</button>
       </div>
 
-      <sc-if value="{{ adminOnMarcas }}">
-        <div style="background:#FFFFFF;border:1px solid rgba(31,41,55,.08);border-radius:8px;overflow:hidden">
-          <div style="display:grid;grid-template-columns:60px minmax(0,2fr) 100px minmax(0,2fr) 90px 90px 180px;gap:14px;padding:14px 20px;background:#F8FAFC;font-family:'Montserrat';font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#6B7280;font-weight:600;border-bottom:1px solid rgba(31,41,55,.08)">
-            <span></span>
-            <span>Marca</span>
-            <span>País</span>
-            <span>Tagline</span>
-            <span>Productos</span>
-            <span>Estado</span>
-            <span style="text-align:right">Acciones</span>
-          </div>
-          <sc-for list="{{ adminBrands }}" as="b" hint-placeholder-count="5">
-            <div style="display:grid;grid-template-columns:60px minmax(0,2fr) 100px minmax(0,2fr) 90px 90px 180px;gap:14px;padding:16px 20px;align-items:center;border-bottom:1px solid rgba(31,41,55,.06);transition:background .2s" style-hover="background:#FBFDF7">
-              <div style="width:28px;height:28px;border-radius:8px;background:{{ b.color }};border:1px solid rgba(31,41,55,.08)"></div>
-              <div>
-                <div style="font-family:'Montserrat';font-size:14px;font-weight:600;color:#1F2937;letter-spacing:-.005em">{{ b.name }}</div>
-                <div style="font-family:'Montserrat';font-size:11.5px;color:#9AA3B2;margin-top:2px">id: {{ b.id }}</div>
-              </div>
-              <div style="font-family:'Montserrat';font-size:13px;color:#6B7280">{{ b.country }}</div>
-              <div style="font-family:'Montserrat';font-size:12.5px;color:#6B7280;line-height:1.4">{{ b.tagline }}</div>
-              <div style="font-family:'Montserrat';font-size:14px;font-weight:600;color:#1F2937">{{ b.productsCount }}</div>
-              <div>
-                <span style="display:inline-block;padding:5px 10px;border-radius:999px;font-family:'Montserrat';font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:{{ b.statusBg }};color:{{ b.statusColor }}">{{ b.statusLabel }}</span>
-              </div>
-              <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">
-                <button onClick="{{ b.toggle }}" style="background:transparent;color:#6B7280;border:1px solid rgba(31,41,55,.14);border-radius:5px;padding:6px 10px;font-family:'Montserrat';font-size:11px;font-weight:600;cursor:pointer" style-hover="border-color:#1F2937;color:#1F2937">{{ b.statusLabel === 'Activa' ? 'Pausar' : 'Activar' }}</button>
-                <button onClick="{{ b.edit }}" style="background:#F8FAFC;color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:5px;padding:6px 12px;font-family:'Montserrat';font-size:11px;font-weight:600;cursor:pointer" style-hover="background:#C3D9AB;border-color:#C3D9AB">Editar</button>
-                <button onClick="{{ b.remove }}" style="background:transparent;color:#B83A6B;border:1px solid rgba(184,58,107,.28);border-radius:5px;padding:6px 10px;font-family:'Montserrat';font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(184,58,107,.08);border-color:#B83A6B">Eliminar</button>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-
-        <sc-if value="{{ adminEditing }}">
-          <div onClick="{{ cancelDraft }}" style="position:fixed;inset:0;z-index:120;background:rgba(31,41,55,.55);backdrop-filter:blur(4px);animation:fluxIn .25s ease both"></div>
-          <aside style="position:fixed;z-index:121;top:0;right:0;bottom:0;width:min(92vw,480px);background:#FFFFFF;padding:30px 28px;display:flex;flex-direction:column;gap:22px;overflow-y:auto;box-shadow:-24px 0 60px -20px rgba(31,41,55,.4);animation:fluxIn .3s ease both">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
-              <div>
-                <div style="font-family:'Montserrat';font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:6px">{{ adminIsNew ? 'Nueva' : 'Editar' }}</div>
-                <h2 style="margin:0;font-family:'Montserrat';font-size:22px;font-weight:600;letter-spacing:-.015em;color:#1F2937">{{ adminDraftTitle }}</h2>
-              </div>
-              <button onClick="{{ cancelDraft }}" style="background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:#6B7280;padding:0" style-hover="color:#1F2937">×</button>
-            </div>
-
-            <div style="display:flex;flex-direction:column;gap:16px">
-              <label style="display:flex;flex-direction:column;gap:6px">
-                <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">Nombre *</span>
-                <input value="{{ adminDraftName }}" onChange="{{ onDraftName }}" placeholder="Ej: Now Foods" style="padding:12px 14px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:14px;color:#1F2937;outline:none" />
-              </label>
-              <label style="display:flex;flex-direction:column;gap:6px">
-                <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">ID (slug) *</span>
-                <input value="{{ adminDraftId }}" onChange="{{ onDraftId }}" placeholder="nowfoods" style="padding:12px 14px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:14px;color:#1F2937;outline:none" />
-                <span style="font-family:'Montserrat';font-size:11px;color:#9AA3B2">Sin espacios ni símbolos. Se auto-genera desde el nombre en marcas nuevas.</span>
-              </label>
-              <label style="display:flex;flex-direction:column;gap:6px">
-                <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">País</span>
-                <input value="{{ adminDraftCountry }}" onChange="{{ onDraftCountry }}" placeholder="Argentina" style="padding:12px 14px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:14px;color:#1F2937;outline:none" />
-              </label>
-              <label style="display:flex;flex-direction:column;gap:6px">
-                <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">Tagline</span>
-                <input value="{{ adminDraftTagline }}" onChange="{{ onDraftTagline }}" placeholder="Suplementos con respaldo científico." style="padding:12px 14px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:14px;color:#1F2937;outline:none" />
-              </label>
-              <label style="display:flex;flex-direction:column;gap:6px">
-                <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">Color de acento</span>
-                <div style="display:flex;align-items:center;gap:12px">
-                  <input type="color" value="{{ adminDraftColor }}" onChange="{{ onDraftColor }}" style="width:52px;height:44px;border:1px solid rgba(31,41,55,.14);border-radius:6px;padding:2px;cursor:pointer;background:#fff" />
-                  <input value="{{ adminDraftColor }}" onChange="{{ onDraftColor }}" placeholder="#C3D9AB" style="flex:1;padding:12px 14px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:14px;color:#1F2937;outline:none" />
-                </div>
-              </label>
-              <label style="display:flex;flex-direction:column;gap:6px">
-                <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">URL del logo (opcional)</span>
-                <input value="{{ adminDraftLogo }}" onChange="{{ onDraftLogo }}" placeholder="https://... o assets/..." style="padding:12px 14px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:14px;color:#1F2937;outline:none" />
-              </label>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#F8FAFC;border-radius:6px;border:1px solid rgba(31,41,55,.06)">
-                <div>
-                  <div style="font-family:'Montserrat';font-size:13px;font-weight:600;color:#1F2937">Estado: {{ adminDraftActiveLabel }}</div>
-                  <div style="font-family:'Montserrat';font-size:11.5px;color:#6B7280;margin-top:2px">Las marcas pausadas no aparecen en la tienda pública.</div>
-                </div>
-                <button onClick="{{ toggleDraftActive }}" style="background:{{ adminDraftActive ? '#C3D9AB' : '#F8FAFC' }};color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:999px;padding:8px 18px;font-family:'Montserrat';font-size:12px;font-weight:600;cursor:pointer">{{ adminDraftActive ? '● Activa' : '○ Pausada' }}</button>
-              </div>
-            </div>
-
-            <div style="margin-top:auto;display:flex;gap:10px;padding-top:20px;border-top:1px solid rgba(31,41,55,.08)">
-              <button onClick="{{ cancelDraft }}" style="flex:1;background:transparent;color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:6px;padding:14px;font-family:'Montserrat';font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#1F2937">Cancelar</button>
-              <button onClick="{{ saveDraft }}" style="flex:1;background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:14px;font-family:'Montserrat';font-size:13px;font-weight:600;letter-spacing:.04em;cursor:pointer" style-hover="background:#C3D9AB;color:#1F2937">{{ adminIsNew ? 'Crear marca' : 'Guardar cambios' }}</button>
-            </div>
-          </aside>
-        </sc-if>
+      <sc-if value="{{ adminLoading }}">
+        <div style="background:#fff;border:1px dashed rgba(31,41,55,.14);padding:30px;border-radius:8px;text-align:center;font-family:'Montserrat';font-size:13px;color:#6B7280">Cargando datos…</div>
       </sc-if>
 
-      <sc-if value="{{ adminOnOtro }}">
-        <div style="background:#FFFFFF;border:1px dashed rgba(31,41,55,.18);border-radius:8px;padding:60px 40px;text-align:center">
-          <div style="font-family:'Montserrat';font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:12px">En desarrollo</div>
-          <h2 style="margin:0;font-family:'Montserrat';font-size:24px;font-weight:500;color:#1F2937;letter-spacing:-.015em">{{ adminSectionLabel }}</h2>
-          <p style="margin:12px auto 0;max-width:44ch;font-family:'Montserrat';font-size:14px;line-height:1.6;color:#6B7280">Este módulo aún no está implementado. La estructura de datos ya está preparada para que un backend real pueda gestionarlo desde acá.</p>
+      <sc-if value="{{ adminShowFaqCats }}">
+        <div style="background:#FFFFFF;border:1px solid rgba(31,41,55,.08);border-radius:8px;padding:18px 20px;margin-bottom:22px">
+          <div style="font-family:'Montserrat';font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:12px">Categorías de FAQ</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+            <sc-for list="{{ adminFaqCategoriesList }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#F8FAFC;border-radius:6px">
+                <div style="font-family:'Montserrat';font-size:13px;color:#1F2937">{{ c.name }} <span style="color:#9AA3B2;font-size:11px">({{ c.slug }})</span></div>
+                <button type="button" onClick="{{ c.remove }}" style="background:transparent;color:#B83A6B;border:1px solid rgba(184,58,107,.28);border-radius:5px;padding:4px 10px;font-family:'Montserrat';font-size:11px;font-weight:600;cursor:pointer">Eliminar</button>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input value="{{ adminFaqCatName }}" onChange="{{ onAdminFaqCatName }}" placeholder="Nueva categoría (ej: Envíos)" style="flex:1;padding:10px 12px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13px;color:#1F2937;outline:none" />
+            <button type="button" onClick="{{ addFaqCat }}" style="background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:10px 16px;font-family:'Montserrat';font-size:12px;font-weight:600;cursor:pointer">+ Agregar</button>
+          </div>
         </div>
+      </sc-if>
+
+      <div style="background:#FFFFFF;border:1px solid rgba(31,41,55,.08);border-radius:8px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:{{ adminTableGridCols }};gap:14px;padding:14px 20px;background:#F8FAFC;font-family:'Montserrat';font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#6B7280;font-weight:600;border-bottom:1px solid rgba(31,41,55,.08)">
+          <sc-for list="{{ adminTableColumns }}" as="col" hint-placeholder-count="5">
+            <span style="text-align:{{ col.align }}">{{ col.label }}</span>
+          </sc-for>
+        </div>
+        <sc-if value="{{ adminTableEmpty }}">
+          <div style="padding:34px 22px;text-align:center;font-family:'Montserrat';font-size:13px;color:#9AA3B2">Sin registros. Creá el primero con el botón de arriba.</div>
+        </sc-if>
+        <sc-for list="{{ adminTableRows }}" as="row" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:{{ adminTableGridCols }};gap:14px;padding:14px 20px;align-items:center;border-bottom:1px solid rgba(31,41,55,.06);transition:background .2s" style-hover="background:#FBFDF7">
+            <sc-for list="{{ row.cells }}" as="cell">
+              <div style="text-align:{{ cell.align }};font-family:'Montserrat';font-size:13px;color:#1F2937">
+                <sc-if value="{{ cell.isSwatch }}">
+                  <div style="width:26px;height:26px;border-radius:6px;background:{{ cell.value }};border:1px solid rgba(31,41,55,.1)"></div>
+                </sc-if>
+                <sc-if value="{{ cell.isText }}">
+                  <div style="font-weight:{{ cell.weight }};line-height:1.35">{{ cell.value }}</div>
+                  <sc-if value="{{ cell.sub }}"><div style="font-size:11.5px;color:#9AA3B2;margin-top:2px">{{ cell.sub }}</div></sc-if>
+                </sc-if>
+                <sc-if value="{{ cell.isBadge }}">
+                  <span style="display:inline-block;padding:4px 10px;border-radius:999px;font-family:'Montserrat';font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:{{ cell.bg }};color:{{ cell.fg }}">{{ cell.value }}</span>
+                </sc-if>
+                <sc-if value="{{ cell.isToggleBtn }}">
+                  <button type="button" onClick="{{ cell.onClick }}" style="background:{{ cell.bg }};color:{{ cell.fg }};border:1px solid rgba(31,41,55,.14);border-radius:999px;padding:5px 12px;font-family:'Montserrat';font-size:11px;font-weight:600;cursor:pointer">{{ cell.value }}</button>
+                </sc-if>
+                <sc-if value="{{ cell.isActions }}">
+                  <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">
+                    <button type="button" onClick="{{ cell.onEdit }}" style="background:#F8FAFC;color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:5px;padding:6px 12px;font-family:'Montserrat';font-size:11px;font-weight:600;cursor:pointer" style-hover="background:#C3D9AB;border-color:#C3D9AB">Editar</button>
+                    <button type="button" onClick="{{ cell.onDelete }}" style="background:transparent;color:#B83A6B;border:1px solid rgba(184,58,107,.28);border-radius:5px;padding:6px 10px;font-family:'Montserrat';font-size:11px;font-weight:600;cursor:pointer" style-hover="background:rgba(184,58,107,.08);border-color:#B83A6B">Eliminar</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ adminEditing }}">
+        <div onClick="{{ cancelDraft }}" style="position:fixed;inset:0;z-index:120;background:rgba(31,41,55,.55);backdrop-filter:blur(4px);animation:fluxIn .25s ease both"></div>
+        <aside style="position:fixed;z-index:121;top:0;right:0;bottom:0;width:min(94vw,540px);background:#FFFFFF;padding:30px 28px;display:flex;flex-direction:column;gap:22px;overflow-y:auto;box-shadow:-24px 0 60px -20px rgba(31,41,55,.4);animation:fluxIn .3s ease both">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+            <div>
+              <div style="font-family:'Montserrat';font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:6px">{{ adminIsNew ? 'Nuevo' : 'Editar' }} · {{ adminEntitySingular }}</div>
+              <h2 style="margin:0;font-family:'Montserrat';font-size:22px;font-weight:600;letter-spacing:-.015em;color:#1F2937">{{ adminDraftTitle }}</h2>
+            </div>
+            <button type="button" onClick="{{ cancelDraft }}" style="background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:#6B7280;padding:0" style-hover="color:#1F2937">×</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ adminDrawerFields }}" as="f" hint-placeholder-count="8">
+              <label style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600">{{ f.label }}</span>
+                <sc-if value="{{ f.isText }}">
+                  <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none" />
+                </sc-if>
+                <sc-if value="{{ f.isNumber }}">
+                  <input type="number" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none" />
+                </sc-if>
+                <sc-if value="{{ f.isTextarea }}">
+                  <textarea onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" rows="3" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none;resize:vertical;min-height:70px">{{ f.value }}</textarea>
+                </sc-if>
+                <sc-if value="{{ f.isSelect }}">
+                  <select value="{{ f.value }}" onChange="{{ f.onChange }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none;background:#fff">
+                    <sc-for list="{{ f.options }}" as="o">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </sc-if>
+                <sc-if value="{{ f.isColor }}">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <input type="color" value="{{ f.value }}" onChange="{{ f.onChange }}" style="width:52px;height:44px;border:1px solid rgba(31,41,55,.14);border-radius:6px;padding:2px;cursor:pointer;background:#fff" />
+                    <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="#C3D9AB" style="flex:1;padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none" />
+                  </div>
+                </sc-if>
+                <sc-if value="{{ f.isToggle }}">
+                  <button type="button" onClick="{{ f.onToggle }}" style="align-self:flex-start;background:{{ f.value ? '#C3D9AB' : '#F8FAFC' }};color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:999px;padding:8px 18px;font-family:'Montserrat';font-size:12px;font-weight:600;cursor:pointer">{{ f.toggleLabel }}</button>
+                </sc-if>
+                <sc-if value="{{ f.isGoals }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    <sc-for list="{{ f.options }}" as="g">
+                      <button type="button" onClick="{{ g.toggle }}" style="background:{{ g.selected ? '#C9A7FF' : '#F8FAFC' }};color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:999px;padding:6px 12px;font-family:'Montserrat';font-size:11.5px;font-weight:600;cursor:pointer">{{ g.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ f.hint }}"><span style="font-family:'Montserrat';font-size:11px;color:#9AA3B2">{{ f.hint }}</span></sc-if>
+              </label>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ adminShowRoutineItems }}">
+            <div style="border-top:1px solid rgba(31,41,55,.08);padding-top:16px">
+              <div style="font-family:'Montserrat';font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:10px">Productos de la rutina</div>
+              <sc-if value="{{ adminRoutineItemsHint }}">
+                <div style="font-family:'Montserrat';font-size:12px;color:#9AA3B2;margin-bottom:10px">Guardá la rutina primero para agregar productos.</div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+                <sc-for list="{{ adminRoutineItems }}" as="it" hint-placeholder-count="3">
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#F8FAFC;border-radius:6px">
+                    <div style="font-family:'Montserrat';font-size:13px;color:#1F2937">{{ it.name }} <span style="color:#9AA3B2;font-size:11px">x{{ it.quantity }}</span></div>
+                    <button type="button" onClick="{{ it.remove }}" style="background:transparent;color:#B83A6B;border:1px solid rgba(184,58,107,.28);border-radius:5px;padding:4px 10px;font-family:'Montserrat';font-size:11px;font-weight:600;cursor:pointer">Quitar</button>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ adminRoutineCanAddItem }}">
+                <div style="display:flex;gap:8px;align-items:center">
+                  <select value="{{ adminSubProductId }}" onChange="{{ onSubProductId }}" style="flex:1;padding:10px 12px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:12.5px;color:#1F2937;outline:none;background:#fff">
+                    <option value="">Seleccionar producto…</option>
+                    <sc-for list="{{ adminProductOptions }}" as="o"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                  </select>
+                  <input type="number" value="{{ adminSubQty }}" onChange="{{ onSubQty }}" style="width:64px;padding:10px 8px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:12.5px;color:#1F2937;outline:none" />
+                  <button type="button" onClick="{{ addRoutineItem }}" style="background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:10px 14px;font-family:'Montserrat';font-size:12px;font-weight:600;cursor:pointer">+ Add</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <div style="margin-top:auto;display:flex;gap:10px;padding-top:20px;border-top:1px solid rgba(31,41,55,.08)">
+            <button type="button" onClick="{{ cancelDraft }}" style="flex:1;background:transparent;color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:6px;padding:14px;font-family:'Montserrat';font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#1F2937">Cancelar</button>
+            <button type="button" onClick="{{ saveDraft }}" style="flex:1;background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:14px;font-family:'Montserrat';font-size:13px;font-weight:600;letter-spacing:.04em;cursor:pointer" style-hover="background:#C3D9AB;color:#1F2937">{{ adminIsNew ? 'Crear' : 'Guardar cambios' }}</button>
+          </div>
+        </aside>
       </sc-if>
 
       <style>@media (max-width:900px){[data-admin-grid]{grid-template-columns:1fr!important}[data-admin-grid] > aside{position:relative!important;height:auto!important}}</style>
@@ -1969,6 +2015,7 @@ class Component extends DCLogic {
     favs:[], quizStep:0, quizAns:[], quick:null, qty:1, gallery:0, openBlock:'descripcion',
     catQ:'', goal:'todos', catFilter:'todas', brandFilter:'todas', sort:'destacados', maxPrice:350000, onlyPromo:false, onlyStock:false,
     adminBrands: null, adminEditId: null, adminSection:'marcas', adminDraft: null,
+    adminData: null, adminEntity: null, adminSubDraft:{ product_id:'', quantity:1, sort_order:0 }, adminSubFaqCat:{ name:'', slug:'', sort_order:0 }, adminLoading:false,
     authUser:null, authChecked:false, authLoading:false, authError:'', loginEmail:'', loginPass:'',
     filtersOpen:false, tIdx:0, news:'', newsOk:false, toast:'', pay:'transfer',
     form:{ nombre:'', apellido:'', tel:'', email:'', doc:'', dir:'', ciudad:'', ref:'' },
@@ -2096,7 +2143,162 @@ class Component extends DCLogic {
       .then(({ data, error }) => {
         if (error || !data) { sb.auth.signOut(); this.setState({ authUser:null, authChecked:true, authError:'Este usuario no tiene acceso al panel.' }); return; }
         this.setState({ authUser:data, authChecked:true, authError:'' });
+        this.loadAdminData();
       });
+  }
+  async loadAdminData() {
+    const sb = window.fluxSupabase; if (!sb) return;
+    this.setState({ adminLoading:true });
+    try {
+      const tables = ['brands','categories','goals','products','ingredients','routines','routine_items','testimonials','faqs','faq_categories','product_goals','product_images'];
+      const results = await Promise.all(tables.map(t => sb.from(t).select('*').order('sort_order', { ascending:true, nullsFirst:false })));
+      const data = {};
+      tables.forEach((t, i) => {
+        const r = results[i];
+        if (r.error) { console.warn('[admin] load ' + t + ' failed:', r.error.message); data[t] = []; }
+        else data[t] = r.data || [];
+      });
+      // Map images by product_id (primary)
+      data.productImageByProduct = {};
+      (data.product_images || []).forEach(pi => {
+        if (pi.is_primary || !data.productImageByProduct[pi.product_id]) data.productImageByProduct[pi.product_id] = pi;
+      });
+      this.setState({ adminData: data, adminLoading:false });
+    } catch (e) {
+      this.flash('Error cargando datos: ' + (e && e.message || e));
+      this.setState({ adminLoading:false });
+    }
+  }
+  async adminSave(table, row, extra) {
+    const sb = window.fluxSupabase; if (!sb) return null;
+    // Strip undefined + empty-string ids
+    const clean = {}; Object.keys(row).forEach(k => { if (row[k] !== undefined) clean[k] = row[k] === '' && (k.endsWith('_id') || k === 'id') ? null : row[k]; });
+    const isNew = !clean.id;
+    if (isNew) delete clean.id;
+    const q = isNew
+      ? sb.from(table).insert(clean).select().single()
+      : sb.from(table).update(clean).eq('id', clean.id).select().single();
+    const { data, error } = await q;
+    if (error) { this.flash('Error: ' + error.message); console.error('[admin] save ' + table, error); return null; }
+    if (extra && typeof extra === 'function') { try { await extra(data); } catch(e) { console.warn('[admin] post-save extra failed', e); } }
+    this.flash(isNew ? 'Creado' : 'Cambios guardados');
+    await this.loadAdminData();
+    return data;
+  }
+  async adminDelete(table, id) {
+    const sb = window.fluxSupabase; if (!sb) return;
+    if (!window.confirm('¿Eliminar este registro?')) return;
+    const { error } = await sb.from(table).delete().eq('id', id);
+    if (error) { this.flash('Error: ' + error.message); return; }
+    this.flash('Eliminado');
+    await this.loadAdminData();
+  }
+  async adminToggle(table, id, field, value) {
+    const sb = window.fluxSupabase; if (!sb) return;
+    const patch = {}; patch[field] = value;
+    const { error } = await sb.from(table).update(patch).eq('id', id);
+    if (error) { this.flash('Error: ' + error.message); return; }
+    await this.loadAdminData();
+  }
+  async saveProductImage(productId, url) {
+    if (!productId || !url) return;
+    const sb = window.fluxSupabase;
+    // Delete existing primary
+    await sb.from('product_images').delete().eq('product_id', productId).eq('is_primary', true);
+    await sb.from('product_images').insert({ product_id: productId, url, is_primary: true, sort_order: 0 });
+  }
+  async saveProductGoals(productId, goalIds) {
+    if (!productId) return;
+    const sb = window.fluxSupabase;
+    await sb.from('product_goals').delete().eq('product_id', productId);
+    if (goalIds && goalIds.length) {
+      await sb.from('product_goals').insert(goalIds.map(g => ({ product_id: productId, goal_id: g })));
+    }
+  }
+  slugify(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0, 60); }
+  adminNewRow() {
+    const entity = this.state.adminSection;
+    const templates = {
+      marcas: { slug:'', name:'', country:'Argentina', tagline:'', color:'#C3D9AB', logo_url:'', active:true, sort_order:0 },
+      productos: { slug:'', sku:'', name:'', brand_id:'', category_id:'', short_description:'', description:'', ingredients:'', how_to_use:'', presentation:'', price:0, promo_price:null, currency:'PYG', stock:0, stock_min:5, badge:'', featured:false, featured_order:null, active:true, sort_order:0, _image_url:'', _goal_ids:[] },
+      ingredientes: { slug:'', name:'', kind:'', description:'', color:'#C9A7FF', image_url:'', active:true, sort_order:0 },
+      rutinas: { slug:'', name:'', time_label:'Mañana', description:'', image_url:'', total_price:0, savings:0, sort_order:0, active:true },
+      testimonios: { quote:'', author_name:'', author_meta:'', product_id:'', avatar_url:'', rating:5, approved:false, featured:false, sort_order:0 },
+      faqs: { category_id:'', question:'', answer:'', sort_order:0, active:true }
+    };
+    const t = templates[entity]; if (!t) return;
+    this.setState({ adminDraft: JSON.parse(JSON.stringify(t)), adminEditId: '__new__', adminEntity: entity });
+  }
+  adminEditRow(row) {
+    const entity = this.state.adminSection;
+    const d = Object.assign({}, row);
+    if (entity === 'productos') {
+      const img = ((this.state.adminData || {}).productImageByProduct || {})[row.id];
+      d._image_url = img ? img.url : '';
+      d._goal_ids = ((this.state.adminData || {}).product_goals || []).filter(pg => pg.product_id === row.id).map(pg => pg.goal_id);
+    }
+    this.setState({ adminDraft: d, adminEditId: row.id, adminEntity: entity });
+  }
+  adminSetField(field) { return (e) => { const v = e && e.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e; this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: v }) })); }; }
+  adminSetFieldNumber(field) { return (e) => { const v = e && e.target ? e.target.value : e; this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: v === '' ? null : Number(v) }) })); }; }
+  adminToggleField(field) { return () => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: !x.adminDraft[field] }) })); }
+  adminToggleGoal(goalId) { return () => this.setState(x => { const cur = (x.adminDraft && x.adminDraft._goal_ids) || []; const has = cur.includes(goalId); return { adminDraft: Object.assign({}, x.adminDraft, { _goal_ids: has ? cur.filter(g => g !== goalId) : cur.concat([goalId]) }) }; }); }
+  async saveAdminDraft() {
+    const s = this.state; const d = s.adminDraft; const entity = s.adminEntity || s.adminSection;
+    if (!d) return;
+    const map = { marcas:'brands', productos:'products', ingredientes:'ingredients', rutinas:'routines', testimonios:'testimonials', faqs:'faqs' };
+    const table = map[entity]; if (!table) return;
+    // Basic validation
+    if (entity === 'marcas' && !d.name) { this.flash('Nombre requerido'); return; }
+    if (entity === 'productos' && (!d.name || !d.brand_id || !d.category_id)) { this.flash('Nombre, marca y categoría son requeridos'); return; }
+    if (entity === 'ingredientes' && (!d.name || !d.description)) { this.flash('Nombre y descripción son requeridos'); return; }
+    if (entity === 'rutinas' && (!d.name || !d.time_label)) { this.flash('Nombre y momento requeridos'); return; }
+    if (entity === 'testimonios' && (!d.quote || !d.author_name)) { this.flash('Cita y autor requeridos'); return; }
+    if (entity === 'faqs' && (!d.question || !d.answer)) { this.flash('Pregunta y respuesta requeridas'); return; }
+    // Auto-slug where relevant
+    if ((entity === 'marcas' || entity === 'productos' || entity === 'ingredientes' || entity === 'rutinas') && !d.slug) d.slug = this.slugify(d.name);
+    // Copy without private fields
+    const row = {}; Object.keys(d).forEach(k => { if (!k.startsWith('_')) row[k] = d[k]; });
+    const imgUrl = d._image_url; const goalIds = d._goal_ids;
+    const extra = entity === 'productos' ? async (saved) => {
+      if (imgUrl !== undefined) await this.saveProductImage(saved.id, imgUrl);
+      if (goalIds !== undefined) await this.saveProductGoals(saved.id, goalIds);
+    } : null;
+    const saved = await this.adminSave(table, row, extra);
+    if (saved) this.setState({ adminDraft: null, adminEditId: null, adminEntity: null });
+  }
+  cancelAdminDraft() { this.setState({ adminDraft: null, adminEditId: null, adminEntity: null }); }
+  async addRoutineItem(routineId) {
+    const sb = window.fluxSupabase;
+    const sd = this.state.adminSubDraft;
+    if (!routineId || !sd.product_id) { this.flash('Seleccioná un producto'); return; }
+    const { error } = await sb.from('routine_items').insert({ routine_id: routineId, product_id: sd.product_id, quantity: sd.quantity || 1, sort_order: sd.sort_order || 0 });
+    if (error) { this.flash('Error: ' + error.message); return; }
+    this.setState({ adminSubDraft:{ product_id:'', quantity:1, sort_order:0 } });
+    await this.loadAdminData();
+  }
+  async removeRoutineItem(id) {
+    const sb = window.fluxSupabase;
+    const { error } = await sb.from('routine_items').delete().eq('id', id);
+    if (error) { this.flash('Error: ' + error.message); return; }
+    await this.loadAdminData();
+  }
+  async addFaqCategory() {
+    const sb = window.fluxSupabase;
+    const c = this.state.adminSubFaqCat;
+    if (!c.name) { this.flash('Nombre de categoría requerido'); return; }
+    const slug = c.slug || this.slugify(c.name);
+    const { error } = await sb.from('faq_categories').insert({ name: c.name, slug, sort_order: c.sort_order || 0, active:true });
+    if (error) { this.flash('Error: ' + error.message); return; }
+    this.setState({ adminSubFaqCat:{ name:'', slug:'', sort_order:0 } });
+    await this.loadAdminData();
+  }
+  async deleteFaqCategory(id) {
+    const sb = window.fluxSupabase;
+    if (!window.confirm('¿Eliminar categoría?')) return;
+    const { error } = await sb.from('faq_categories').delete().eq('id', id);
+    if (error) { this.flash('Error: ' + error.message); return; }
+    await this.loadAdminData();
   }
   doLogin() {
     const sb = window.fluxSupabase;
@@ -2499,57 +2701,247 @@ class Component extends DCLogic {
       closeQuick:() => this.setState({ quick:null }),
       toast:s.toast,
 
-      adminBrands: (s.adminBrands || BRANDS).map(b => Object.assign({}, b, {
-        productsCount: PRODUCTS.filter(p => p.brand === b.id).length,
-        statusLabel: b.active ? 'Activa' : 'Pausada',
-        statusBg: b.active ? '#F1F6EA' : '#F8FAFC',
-        statusColor: b.active ? '#5B7F3E' : '#9AA3B2',
-        toggle:() => this.setState(x => { const list = (x.adminBrands || BRANDS).slice(); const i = list.findIndex(z => z.id === b.id); if (i >= 0) list[i] = Object.assign({}, list[i], { active: !list[i].active }); return { adminBrands: list }; }),
-        edit:() => this.setState({ adminDraft: Object.assign({}, b), adminEditId: b.id }),
-        remove:() => { if (!window.confirm('¿Eliminar la marca "' + b.name + '"? Los productos asignados quedarán sin marca hasta que se reasignen.')) return; this.setState(x => ({ adminBrands: (x.adminBrands || BRANDS).filter(z => z.id !== b.id) })); }
-      })),
-      adminEditing: !!s.adminDraft,
-      adminDraft: s.adminDraft || { id:'', name:'', country:'Argentina', tagline:'', color:'#C3D9AB', logo:'', active:true },
-      adminIsNew: s.adminEditId === '__new__',
-      adminDraftTitle: s.adminEditId === '__new__' ? 'Nueva marca' : ('Editar · ' + ((s.adminDraft && s.adminDraft.name) || '')),
-      adminNewBrand:() => this.setState({ adminDraft: { id:'', name:'', country:'Argentina', tagline:'', color:'#C3D9AB', logo:'', active:true }, adminEditId: '__new__' }),
-      adminDraftName:  (s.adminDraft || {}).name || '',
-      adminDraftId:    (s.adminDraft || {}).id || '',
-      adminDraftCountry:(s.adminDraft || {}).country || '',
-      adminDraftTagline:(s.adminDraft || {}).tagline || '',
-      adminDraftColor: (s.adminDraft || {}).color || '#C3D9AB',
-      adminDraftLogo:  (s.adminDraft || {}).logo || '',
-      adminDraftActive:(s.adminDraft || {}).active === false ? false : true,
-      adminDraftActiveLabel:((s.adminDraft || {}).active === false ? 'Pausada' : 'Activa'),
-      onDraft: (field) => (e) => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: e.target.value }) })),
-      onDraftName:    e => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { name: e.target.value, id: (x.adminEditId === '__new__' && !x.adminDraft.id) ? e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,20) : x.adminDraft.id }) })),
-      onDraftId:      e => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { id: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,20) }) })),
-      onDraftCountry: e => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { country: e.target.value }) })),
-      onDraftTagline: e => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { tagline: e.target.value }) })),
-      onDraftColor:   e => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { color: e.target.value }) })),
-      onDraftLogo:    e => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { logo: e.target.value }) })),
-      toggleDraftActive:() => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { active: !(x.adminDraft && x.adminDraft.active !== false) }) })),
-      cancelDraft:() => this.setState({ adminDraft: null, adminEditId: null }),
-      saveDraft:() => this.setState(x => {
-        const d = x.adminDraft; if (!d || !d.name.trim() || !d.id.trim()) { this.flash('Nombre e ID son obligatorios'); return {}; }
-        const list = (x.adminBrands || BRANDS).slice();
-        const i = list.findIndex(b => b.id === (x.adminEditId === '__new__' ? d.id : x.adminEditId));
-        const clean = { id: d.id, name: d.name, country: d.country || '—', tagline: d.tagline || '', color: d.color || '#C3D9AB', logo: d.logo || '', active: d.active !== false };
-        if (i >= 0) list[i] = clean; else list.push(clean);
-        this.flash(x.adminEditId === '__new__' ? 'Marca creada' : 'Cambios guardados');
-        return { adminBrands: list, adminDraft: null, adminEditId: null };
-      }),
-      adminSection: s.adminSection || 'marcas',
-      adminSections:[
-        { id:'marcas', name:'Marcas', count: (s.adminBrands || BRANDS).length, pick:() => this.setState({ adminSection:'marcas' }) },
-        { id:'productos', name:'Productos', count: PRODUCTS.length, pick:() => this.setState({ adminSection:'productos' }) },
-        { id:'pedidos', name:'Pedidos', count: 0, pick:() => this.setState({ adminSection:'pedidos' }) },
-        { id:'clientes', name:'Clientes', count: 0, pick:() => this.setState({ adminSection:'clientes' }) },
-        { id:'contenido', name:'Contenido', count: 0, pick:() => this.setState({ adminSection:'contenido' }) }
-      ].map(sec => Object.assign({}, sec, { activeClass: (s.adminSection || 'marcas') === sec.id ? 'is-active' : '' })),
-      adminOnMarcas: (s.adminSection || 'marcas') === 'marcas',
-      adminOnOtro:   (s.adminSection || 'marcas') !== 'marcas',
-      adminSectionLabel:{ marcas:'Marcas', productos:'Productos', pedidos:'Pedidos', clientes:'Clientes', contenido:'Contenido' }[s.adminSection || 'marcas'],
+      ...(function(){
+        const self = this;
+        const AD = s.adminData || { brands:[], products:[], categories:[], goals:[], ingredients:[], routines:[], routine_items:[], testimonials:[], faqs:[], faq_categories:[], product_goals:[], product_images:[], productImageByProduct:{} };
+        const section = s.adminSection || 'marcas';
+        const brandById = {}; (AD.brands || []).forEach(b => { brandById[b.id] = b; });
+        const catById = {}; (AD.categories || []).forEach(c => { catById[c.id] = c; });
+        const goalById = {}; (AD.goals || []).forEach(g => { goalById[g.id] = g; });
+        const prodById = {}; (AD.products || []).forEach(p => { prodById[p.id] = p; });
+        const routineItemsByRoutine = {}; (AD.routine_items || []).forEach(ri => { (routineItemsByRoutine[ri.routine_id] = routineItemsByRoutine[ri.routine_id] || []).push(ri); });
+        const faqCatById = {}; (AD.faq_categories || []).forEach(c => { faqCatById[c.id] = c; });
+
+        const sections = [
+          { id:'marcas',       name:'Marcas',       singular:'marca',       newLabel:'+ Nueva marca',       count:(AD.brands||[]).length },
+          { id:'productos',    name:'Productos',    singular:'producto',    newLabel:'+ Nuevo producto',    count:(AD.products||[]).length },
+          { id:'ingredientes', name:'Ingredientes', singular:'ingrediente', newLabel:'+ Nuevo ingrediente', count:(AD.ingredients||[]).length },
+          { id:'rutinas',      name:'Rutinas',      singular:'rutina',      newLabel:'+ Nueva rutina',      count:(AD.routines||[]).length },
+          { id:'testimonios',  name:'Testimonios',  singular:'testimonio',  newLabel:'+ Nuevo testimonio',  count:(AD.testimonials||[]).length },
+          { id:'faqs',         name:'FAQs',         singular:'pregunta',    newLabel:'+ Nueva pregunta',    count:(AD.faqs||[]).length }
+        ];
+        const currentSection = sections.find(sec => sec.id === section) || sections[0];
+
+        // ---------- Table configs per entity ----------
+        const cellText = (v, opts) => Object.assign({ isText:true, value: v == null ? '' : String(v), weight:600, align:'left' }, opts || {});
+        const cellSwatch = (v) => ({ isSwatch:true, value: v || '#F8FAFC', align:'left' });
+        const cellBadge = (label, active) => ({ isBadge:true, value: label, bg: active ? '#F1F6EA' : '#F8FAFC', fg: active ? '#5B7F3E' : '#9AA3B2', align:'left' });
+        const cellToggle = (label, on, onClick) => ({ isToggleBtn:true, value: label, bg: on ? '#C9A7FF' : '#F8FAFC', fg:'#1F2937', onClick, align:'left' });
+        const cellActions = (row, table) => ({ isActions:true, onEdit:() => self.adminEditRow(row), onDelete:() => self.adminDelete(table, row.id), align:'right' });
+        const fmtGs = (n) => n == null ? '—' : ('Gs. ' + Number(n).toLocaleString('es-PY').replace(/,/g,'.'));
+
+        let tableColumns = [], tableRows = [], tableGridCols = '';
+        if (section === 'marcas') {
+          tableGridCols = '50px minmax(0,2fr) 110px minmax(0,2fr) 100px 200px';
+          tableColumns = [{label:''},{label:'Marca'},{label:'País'},{label:'Tagline'},{label:'Estado'},{label:'Acciones',align:'right'}];
+          tableRows = (AD.brands || []).map(b => ({ cells:[
+            cellSwatch(b.color),
+            cellText(b.name, { sub:'slug: ' + (b.slug || '') }),
+            cellText(b.country || '—', { weight:400 }),
+            cellText(b.tagline || '', { weight:400 }),
+            cellToggle(b.active ? 'Activa' : 'Pausada', b.active, () => self.adminToggle('brands', b.id, 'active', !b.active)),
+            cellActions(b, 'brands')
+          ]}));
+        } else if (section === 'productos') {
+          tableGridCols = '50px minmax(0,2fr) minmax(0,1.2fr) 90px 70px 90px 90px 200px';
+          tableColumns = [{label:''},{label:'Producto'},{label:'Marca / Cat.'},{label:'Precio'},{label:'Stock'},{label:'Destacado'},{label:'Activo'},{label:'Acciones',align:'right'}];
+          tableRows = (AD.products || []).map(p => {
+            const img = (AD.productImageByProduct || {})[p.id];
+            return { cells:[
+              img ? { isText:true, value:'', weight:400, align:'left' } : cellSwatch((brandById[p.brand_id] && brandById[p.brand_id].color) || '#F8FAFC'),
+              cellText(p.name, { sub:'slug: ' + (p.slug || '') }),
+              cellText(((brandById[p.brand_id] && brandById[p.brand_id].name) || '—') + ' · ' + ((catById[p.category_id] && catById[p.category_id].name) || '—'), { weight:400 }),
+              cellText(fmtGs(p.promo_price || p.price), { weight:600 }),
+              cellText(String(p.stock == null ? 0 : p.stock)),
+              cellToggle(p.featured ? '★ Sí' : 'No', p.featured, () => self.adminToggle('products', p.id, 'featured', !p.featured)),
+              cellToggle(p.active ? 'Activo' : 'Off', p.active, () => self.adminToggle('products', p.id, 'active', !p.active)),
+              cellActions(p, 'products')
+            ]};
+          });
+        } else if (section === 'ingredientes') {
+          tableGridCols = '50px minmax(0,2fr) 130px minmax(0,2fr) 100px 200px';
+          tableColumns = [{label:''},{label:'Ingrediente'},{label:'Tipo'},{label:'Descripción'},{label:'Estado'},{label:'Acciones',align:'right'}];
+          tableRows = (AD.ingredients || []).map(ing => ({ cells:[
+            cellSwatch(ing.color || '#F8FAFC'),
+            cellText(ing.name, { sub:'slug: ' + (ing.slug || '') }),
+            cellText(ing.kind || '—', { weight:400 }),
+            cellText(ing.description || '', { weight:400 }),
+            cellToggle(ing.active ? 'Activo' : 'Off', ing.active, () => self.adminToggle('ingredients', ing.id, 'active', !ing.active)),
+            cellActions(ing, 'ingredients')
+          ]}));
+        } else if (section === 'rutinas') {
+          tableGridCols = 'minmax(0,2fr) 130px minmax(0,2fr) 110px 100px 200px';
+          tableColumns = [{label:'Rutina'},{label:'Momento'},{label:'Descripción'},{label:'Precio combo'},{label:'Estado'},{label:'Acciones',align:'right'}];
+          tableRows = (AD.routines || []).map(r => ({ cells:[
+            cellText(r.name, { sub:'slug: ' + (r.slug || '') + ' · ' + ((routineItemsByRoutine[r.id]||[]).length) + ' items' }),
+            cellText(r.time_label || '—', { weight:400 }),
+            cellText(r.description || '', { weight:400 }),
+            cellText(fmtGs(r.total_price), { weight:600 }),
+            cellToggle(r.active ? 'Activa' : 'Off', r.active, () => self.adminToggle('routines', r.id, 'active', !r.active)),
+            cellActions(r, 'routines')
+          ]}));
+        } else if (section === 'testimonios') {
+          tableGridCols = 'minmax(0,2fr) minmax(0,1.2fr) 70px 90px 90px 200px';
+          tableColumns = [{label:'Cita'},{label:'Autor'},{label:'Rating'},{label:'Aprobado'},{label:'Destacado'},{label:'Acciones',align:'right'}];
+          tableRows = (AD.testimonials || []).map(t => ({ cells:[
+            cellText((t.quote || '').slice(0, 90) + ((t.quote||'').length > 90 ? '…' : ''), { weight:500 }),
+            cellText(t.author_name || '—', { sub: t.author_meta || '' }),
+            cellText('★ ' + (t.rating || 0)),
+            cellToggle(t.approved ? 'Sí' : 'No', t.approved, () => self.adminToggle('testimonials', t.id, 'approved', !t.approved)),
+            cellToggle(t.featured ? '★' : '—', t.featured, () => self.adminToggle('testimonials', t.id, 'featured', !t.featured)),
+            cellActions(t, 'testimonials')
+          ]}));
+        } else if (section === 'faqs') {
+          tableGridCols = 'minmax(0,1fr) minmax(0,2fr) minmax(0,2fr) 100px 200px';
+          tableColumns = [{label:'Categoría'},{label:'Pregunta'},{label:'Respuesta'},{label:'Estado'},{label:'Acciones',align:'right'}];
+          tableRows = (AD.faqs || []).map(f => ({ cells:[
+            cellText((faqCatById[f.category_id] && faqCatById[f.category_id].name) || '—', { weight:500 }),
+            cellText(f.question || '', { weight:600 }),
+            cellText((f.answer || '').slice(0, 80) + ((f.answer||'').length > 80 ? '…' : ''), { weight:400 }),
+            cellToggle(f.active ? 'Activa' : 'Off', f.active, () => self.adminToggle('faqs', f.id, 'active', !f.active)),
+            cellActions(f, 'faqs')
+          ]}));
+        }
+
+        // ---------- Drawer fields per entity ----------
+        const d = s.adminDraft || {};
+        const brandOpts = [{ value:'', label:'— Elegir marca —' }].concat((AD.brands||[]).map(b => ({ value:b.id, label:b.name })));
+        const catOpts   = [{ value:'', label:'— Elegir categoría —' }].concat((AD.categories||[]).map(c => ({ value:c.id, label:c.name })));
+        const prodOpts  = [{ value:'', label:'— Elegir producto —' }].concat((AD.products||[]).map(p => ({ value:p.id, label:p.name })));
+        const faqCatOpts= [{ value:'', label:'— Sin categoría —' }].concat((AD.faq_categories||[]).map(c => ({ value:c.id, label:c.name })));
+        const timeOpts  = ['Mañana','Durante el día','Noche','Antes de entrenar','Después de entrenar'].map(v => ({ value:v, label:v }));
+
+        const F = {
+          text: (key, label, ph, extra) => Object.assign({ isText:true, label, value: d[key] == null ? '' : d[key], placeholder: ph || '', onChange: self.adminSetField(key) }, extra||{}),
+          num:  (key, label, ph) => ({ isNumber:true, label, value: d[key] == null ? '' : d[key], placeholder: ph || '', onChange: self.adminSetFieldNumber(key) }),
+          area: (key, label, ph) => ({ isTextarea:true, label, value: d[key] == null ? '' : d[key], placeholder: ph || '', onChange: self.adminSetField(key) }),
+          sel:  (key, label, opts) => ({ isSelect:true, label, value: d[key] == null ? '' : d[key], options: opts, onChange: self.adminSetField(key) }),
+          color:(key, label) => ({ isColor:true, label, value: d[key] || '#C3D9AB', onChange: self.adminSetField(key) }),
+          tog:  (key, label, onLabel, offLabel) => ({ isToggle:true, label, value: !!d[key], toggleLabel: d[key] ? ('● ' + onLabel) : ('○ ' + offLabel), onToggle: self.adminToggleField(key) }),
+          goals:(label) => ({ isGoals:true, label, options: (AD.goals||[]).map(g => ({ label:g.name, selected:((d._goal_ids)||[]).includes(g.id), toggle: self.adminToggleGoal(g.id) })) })
+        };
+
+        let drawerFields = [];
+        if (section === 'marcas') drawerFields = [
+          F.text('name', 'Nombre *', 'Ej: Now Foods'),
+          Object.assign(F.text('slug', 'Slug', 'nowfoods'), { hint:'Sin espacios ni símbolos. Se auto-genera si lo dejás vacío.' }),
+          F.text('country', 'País', 'Argentina'),
+          F.text('tagline', 'Tagline'),
+          F.color('color', 'Color de acento'),
+          F.text('logo_url', 'URL del logo (opcional)'),
+          F.num('sort_order', 'Orden', '0'),
+          F.tog('active', 'Estado', 'Activa', 'Pausada')
+        ];
+        else if (section === 'productos') drawerFields = [
+          F.text('name', 'Nombre *', 'Ej: Multivitamínico Diario'),
+          F.text('slug', 'Slug', 'multivitaminico-diario'),
+          F.text('sku', 'SKU'),
+          F.sel('brand_id', 'Marca *', brandOpts),
+          F.sel('category_id', 'Categoría *', catOpts),
+          F.area('short_description', 'Descripción corta', '1 línea para las cards'),
+          F.area('description', 'Descripción completa'),
+          F.area('ingredients', 'Ingredientes'),
+          F.area('how_to_use', 'Modo de uso'),
+          F.text('presentation', 'Presentación', '60 cápsulas · 30 días'),
+          F.num('price', 'Precio (Gs) *', '0'),
+          F.num('promo_price', 'Precio promo (Gs)', 'Vacío = sin promo'),
+          F.num('stock', 'Stock', '0'),
+          F.num('stock_min', 'Stock mínimo', '5'),
+          F.text('badge', 'Badge', 'Nuevo / Más vendido / Promo'),
+          Object.assign(F.text('_image_url', 'URL imagen principal'), { hint:'Se guarda en product_images como is_primary.' }),
+          F.goals('Objetivos'),
+          F.num('featured_order', 'Orden destacados'),
+          F.num('sort_order', 'Orden', '0'),
+          F.tog('featured', 'Destacado (Tus esenciales)', 'Destacado', 'No destacado'),
+          F.tog('active', 'Activo', 'Activo', 'Pausado')
+        ];
+        else if (section === 'ingredientes') drawerFields = [
+          F.text('name', 'Nombre *', 'Vitaminas del complejo B'),
+          F.text('slug', 'Slug', 'complejo-b'),
+          F.text('kind', 'Tipo (apellido)', 'Complejo B · Nootrópico · Aminoácido'),
+          F.area('description', 'Descripción *', 'Metabolismo energético y sistema nervioso.'),
+          F.color('color', 'Color de swatch'),
+          F.text('image_url', 'URL imagen'),
+          F.num('sort_order', 'Orden'),
+          F.tog('active', 'Activo', 'Activo', 'Pausado')
+        ];
+        else if (section === 'rutinas') drawerFields = [
+          F.text('name', 'Nombre *', 'Rutina Energía'),
+          F.text('slug', 'Slug', 'rutina-energia'),
+          F.sel('time_label', 'Momento *', timeOpts),
+          F.area('description', 'Descripción'),
+          F.text('image_url', 'URL imagen'),
+          F.num('total_price', 'Precio combo (Gs)'),
+          F.num('savings', 'Ahorro vs. suelto (Gs)'),
+          F.num('sort_order', 'Orden'),
+          F.tog('active', 'Activa', 'Activa', 'Pausada')
+        ];
+        else if (section === 'testimonios') drawerFields = [
+          F.area('quote', 'Cita *'),
+          F.text('author_name', 'Autor *', 'Camila R.'),
+          F.text('author_meta', 'Meta', 'Essential · 4 meses de uso'),
+          F.sel('product_id', 'Producto relacionado', [{ value:'', label:'— Ninguno —' }].concat((AD.products||[]).map(p => ({ value:p.id, label:p.name })))),
+          F.text('avatar_url', 'URL avatar'),
+          F.num('rating', 'Rating (1-5)'),
+          F.num('sort_order', 'Orden'),
+          F.tog('approved', 'Aprobado', 'Aprobado', 'Pendiente'),
+          F.tog('featured', 'Destacado', 'Destacado', 'No destacado')
+        ];
+        else if (section === 'faqs') drawerFields = [
+          F.sel('category_id', 'Categoría', faqCatOpts),
+          F.text('question', 'Pregunta *'),
+          F.area('answer', 'Respuesta *'),
+          F.num('sort_order', 'Orden'),
+          F.tog('active', 'Activa', 'Activa', 'Pausada')
+        ];
+
+        // Routine items sub-list (only when editing an existing routine)
+        const editingRoutine = section === 'rutinas' && s.adminEditId && s.adminEditId !== '__new__' ? s.adminEditId : null;
+        const currentRoutineItems = editingRoutine ? (routineItemsByRoutine[editingRoutine] || []).map(ri => ({
+          name: (prodById[ri.product_id] && prodById[ri.product_id].name) || '(producto eliminado)',
+          quantity: ri.quantity,
+          remove: () => self.removeRoutineItem(ri.id)
+        })) : [];
+
+        const draftTitle = s.adminEditId === '__new__'
+          ? ('Nuevo · ' + currentSection.singular)
+          : ('Editar · ' + (d.name || d.question || d.author_name || d.quote || ''));
+
+        return {
+          adminSection: section,
+          adminSections: sections.map(sec => ({ id:sec.id, name:sec.name, count:sec.count, activeClass: section === sec.id ? 'is-active' : '', pick:() => self.setState({ adminSection: sec.id, adminDraft:null, adminEditId:null, adminEntity:null }) })),
+          adminSectionLabel: currentSection.name,
+          adminEntitySingular: currentSection.singular,
+          adminNewLabel: currentSection.newLabel,
+          adminLoading: s.adminLoading && !s.adminData,
+          adminTableGridCols: tableGridCols,
+          adminTableColumns: tableColumns,
+          adminTableRows: tableRows,
+          adminTableEmpty: tableRows.length === 0 && !s.adminLoading,
+          adminDrawerFields: drawerFields,
+          adminEditing: !!s.adminDraft,
+          adminIsNew: s.adminEditId === '__new__',
+          adminDraftTitle: draftTitle,
+          adminNewRow: () => self.adminNewRow(),
+          cancelDraft: () => self.cancelAdminDraft(),
+          saveDraft: () => self.saveAdminDraft(),
+          adminShowRoutineItems: section === 'rutinas' && !!s.adminDraft,
+          adminRoutineItems: currentRoutineItems,
+          adminRoutineCanAddItem: !!editingRoutine,
+          adminRoutineItemsHint: section === 'rutinas' && s.adminEditId === '__new__',
+          adminProductOptions: (AD.products||[]).map(p => ({ value:p.id, label:p.name })),
+          adminSubProductId: s.adminSubDraft.product_id,
+          adminSubQty: s.adminSubDraft.quantity,
+          onSubProductId: (e) => self.setState(x => ({ adminSubDraft: Object.assign({}, x.adminSubDraft, { product_id: e.target.value }) })),
+          onSubQty: (e) => self.setState(x => ({ adminSubDraft: Object.assign({}, x.adminSubDraft, { quantity: Number(e.target.value) || 1 }) })),
+          addRoutineItem: () => self.addRoutineItem(editingRoutine),
+          adminShowFaqCats: section === 'faqs',
+          adminFaqCategoriesList: (AD.faq_categories || []).map(c => ({ name:c.name, slug:c.slug, remove: () => self.deleteFaqCategory(c.id) })),
+          adminFaqCatName: s.adminSubFaqCat.name,
+          onAdminFaqCatName: (e) => self.setState(x => ({ adminSubFaqCat: Object.assign({}, x.adminSubFaqCat, { name: e.target.value }) })),
+          addFaqCat: () => self.addFaqCategory()
+        };
+      }).call(this),
 
       footerCols:[
         { title:'Comprar', links:['Productos', 'Marcas', 'Objetivos', 'Rutinas'] },
