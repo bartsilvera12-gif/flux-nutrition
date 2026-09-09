@@ -422,7 +422,8 @@
 
 <div style="min-height:100vh;background:#F8FAFC">
 
-  <header style="display:{{ isAdmin ? 'none' : 'block' }};position:sticky;top:0;z-index:70;background:#FFFFFF;border-bottom:1px solid rgba(31,41,55,.08)">
+  <sc-if value="{{ !isAdmin }}" hint-placeholder-val="{{ true }}">
+  <header style="position:sticky;top:0;z-index:70;background:#FFFFFF;border-bottom:1px solid rgba(31,41,55,.08)">
     <div style="position:relative;max-width:1280px;margin:0 auto;padding:0 clamp(18px,4vw,44px);height:78px;display:flex;align-items:center;gap:clamp(10px,2vw,28px)">
       <div style="flex:1 1 0;display:flex;align-items:center;gap:clamp(12px,2vw,26px);min-width:0">
         <button onClick="{{ toggleMobile }}" style="display:{{ mobileBtnDisplay }};align-items:center;justify-content:center;width:40px;height:40px;border:1px solid rgba(31,41,55,.12);background:#fff;border-radius:999px;cursor:pointer;padding:0" style-hover="border-color:#C3D9AB">
@@ -457,6 +458,7 @@
     <div style="position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(31,41,55,.16),transparent);opacity:{{ scrolledOpacity }};transition:opacity .4s"></div>
 
   </header>
+  </sc-if>
 
   <sc-if value="{{ searchOpen }}">
     <div style="position:fixed;inset:0;z-index:90;background:rgba(31,41,55,.28);backdrop-filter:blur(6px);animation:fluxIn .3s ease both" onClick="{{ closeSearch }}"></div>
