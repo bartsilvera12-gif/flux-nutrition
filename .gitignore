@@ -1,0 +1,22 @@
+# Build / distribución (duplicado del root)
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node (por si en algún momento se agrega)
+node_modules/
+.env
+.env.local
+npm-debug.log*
+
+# Logs varios
+*.log

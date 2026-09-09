@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin:0; background:#F8FAFC; color:#1F2937; font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  a { color:#1F2937; text-decoration:none; }
+  a:hover { color:#5B7F3E; }
+  input, select, button, textarea { font-family:inherit; }
+  @keyframes admIn { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:none } }
+  @keyframes admBar { from { transform:scaleY(.2) } to { transform:scaleY(1) } }
+  ::-webkit-scrollbar { width:9px; height:9px }
+  ::-webkit-scrollbar-thumb { background:rgba(31,41,55,.16); border-radius:99px }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#F8FAFC">
+
+  <sc-if value="{{ needsLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#FFFFFF,#F1F6EA 50%,#EEF2FF)">
+      <div style="width:100%;max-width:400px;background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:26px;padding:clamp(26px,4vw,40px);box-shadow:0 50px 90px -60px rgba(31,41,55,.5);animation:admIn .5s ease both">
+        <img src="assets/flux-logo.png" alt="FLUX NUTRITION by FIVA" style="height:46px;width:auto;display:block;margin:0 auto 26px" />
+        <div style="text-align:center;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#6B7280;font-weight:600">Panel de administración</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:26px">
+          <label style="display:flex;flex-direction:column;gap:7px">
+            <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">Email</span>
+            <input value="{{ loginUser }}" onChange="{{ onLoginUser }}" placeholder="admin@fluxnutrition.py" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:12px;padding:14px 16px;font-size:14px;outline:none;color:#1F2937" style-focus="border-color:#C3D9AB;background:#fff" />
+          </label>
+          <label style="display:flex;flex-direction:column;gap:7px">
+            <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">Contraseña</span>
+            <input type="password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" placeholder="••••••••" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:12px;padding:14px 16px;font-size:14px;outline:none;color:#1F2937" style-focus="border-color:#C3D9AB;background:#fff" />
+          </label>
+          <label style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:#6B7280;cursor:pointer"><input type="checkbox" style="width:15px;height:15px;accent-color:#C3D9AB" />Mantener sesión activa</label>
+          <button onClick="{{ doLogin }}" style="background:#1F2937;color:#fff;border:0;border-radius:999px;padding:15px;font-size:13.5px;font-weight:600;cursor:pointer;margin-top:6px" style-hover="background:#111827">Ingresar</button>
+          <div style="font-size:11.5px;color:#9AA3B2;text-align:center;line-height:1.6">Acceso restringido. Sesión con verificación en dos pasos y registro de actividad.</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ loggedIn }}">
+  <div style="display:flex;min-height:100vh">
+    <aside style="display:{{ sidebarDisplay }};position:{{ sidebarPosition }};z-index:60;top:0;left:0;bottom:0;width:250px;flex:0 0 250px;background:#fff;border-right:1px solid rgba(31,41,55,.07);flex-direction:column;padding:22px 16px;gap:22px;overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 6px">
+        <img src="assets/flux-logo-h.png" alt="FLUX" style="height:20px;width:auto" />
+        <button onClick="{{ closeSidebar }}" style="display:{{ mobileOnly }};background:none;border:0;font-size:20px;line-height:1;cursor:pointer;color:#6B7280">×</button>
+      </div>
+      <nav style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ menu }}" as="m" hint-placeholder-count="14">
+          <button onClick="{{ m.go }}" style="display:flex;align-items:center;gap:11px;text-align:left;background:{{ m.bg }};border:0;border-radius:12px;padding:11px 12px;font-size:13.5px;font-weight:{{ m.weight }};color:#1F2937;cursor:pointer" style-hover="background:#F1F6EA">
+            <span style="width:6px;height:6px;border-radius:99px;background:{{ m.dot }}"></span>{{ m.name }}
+            <sc-if value="{{ m.count }}"><span style="margin-left:auto;font-size:10.5px;font-weight:600;color:#5B7F3E;background:#F1F6EA;border-radius:99px;padding:3px 8px">{{ m.count }}</span></sc-if>
+          </button>
+        </sc-for>
+      </nav>
+      <div style="margin-top:auto;border-top:1px solid rgba(31,41,55,.07);padding-top:16px;display:flex;align-items:center;gap:11px">
+        <span style="width:34px;height:34px;border-radius:999px;background:#F1F6EA;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#5B7F3E">FN</span>
+        <div style="min-width:0">
+          <div style="font-size:12.5px;font-weight:600">Equipo FLUX</div>
+          <button onClick="{{ logout }}" style="background:none;border:0;padding:0;font-size:11px;color:#9AA3B2;cursor:pointer">Cerrar sesión</button>
+        </div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="position:sticky;top:0;z-index:40;background:rgba(248,250,252,.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(31,41,55,.07);padding:14px clamp(16px,3vw,32px);display:flex;align-items:center;gap:14px">
+        <button onClick="{{ openSidebar }}" style="display:{{ mobileOnly }};align-items:center;justify-content:center;width:38px;height:38px;border:1px solid rgba(31,41,55,.12);background:#fff;border-radius:11px;cursor:pointer;padding:0">
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center"><span style="width:14px;height:1.5px;background:#1F2937;display:block"></span><span style="width:14px;height:1.5px;background:#1F2937;display:block"></span></div>
+        </button>
+        <div style="min-width:0">
+          <div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:#6B7280;font-weight:600">Administración</div>
+          <div style="font-family:'Montserrat';font-size:clamp(17px,2.2vw,22px);font-weight:600;letter-spacing:-.02em">{{ title }}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <div style="display:{{ deskOnly }};align-items:center;gap:9px;background:#fff;border:1px solid rgba(31,41,55,.1);border-radius:999px;padding:9px 15px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4.2-4.2"></path></svg>
+            <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Buscar" style="border:0;background:none;outline:none;font-size:13px;width:130px;color:#1F2937" />
+          </div>
+          <a href="FLUX Nutrition.dc.html" style="background:#C3D9AB;border-radius:999px;padding:11px 18px;font-size:12.5px;font-weight:600;color:#1F2937;white-space:nowrap" style-hover="background:#B4CE99;color:#1F2937">Ver tienda</a>
+        </div>
+      </header>
+
+      <main style="flex:1;padding:clamp(18px,3vw,32px);display:flex;flex-direction:column;gap:clamp(16px,2.4vw,24px)">
+
+        <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:20px">
+                <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6B7280;font-weight:600">{{ k.label }}</div>
+                <div style="font-family:'Montserrat';font-size:clamp(20px,2.6vw,27px);font-weight:600;margin-top:12px;letter-spacing:-.02em">{{ k.value }}</div>
+                <div style="font-size:11.5px;color:{{ k.color }};font-weight:600;margin-top:6px">{{ k.delta }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:{{ dashCols }};gap:14px">
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:22px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                <div style="font-family:'Montserrat';font-size:16px;font-weight:600">Ventas últimos 14 días</div>
+                <div style="display:flex;gap:6px">
+                  <sc-for list="{{ ranges }}" as="r" hint-placeholder-count="3">
+                    <button onClick="{{ r.pick }}" style="background:{{ r.bg }};border:1px solid rgba(31,41,55,.1);border-radius:999px;padding:7px 13px;font-size:11.5px;font-weight:600;cursor:pointer;color:#1F2937">{{ r.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;align-items:flex-end;gap:{{ barGap }};height:200px;margin-top:24px">
+                <sc-for list="{{ chart }}" as="c" hint-placeholder-count="14">
+                  <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px">
+                    <div style="width:100%;border-radius:8px 8px 3px 3px;background:{{ c.bg }};height:{{ c.h }};transition:height .5s ease"></div>
+                    <span style="font-size:9.5px;color:#9AA3B2">{{ c.day }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:20px">
+                <div style="font-family:'Montserrat';font-size:15px;font-weight:600;margin-bottom:14px">Stock bajo</div>
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <sc-for list="{{ lowStock }}" as="l" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <span style="width:8px;height:8px;border-radius:99px;background:{{ l.color }}"></span>
+                      <span style="font-size:13px;flex:1;min-width:0">{{ l.name }}</span>
+                      <span style="font-size:12px;font-weight:600;color:#B45309">{{ l.stock }} u.</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:20px">
+                <div style="font-family:'Montserrat';font-size:15px;font-weight:600;margin-bottom:14px">Más vendidos</div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <sc-for list="{{ topProducts }}" as="t" hint-placeholder-count="4">
+                    <div>
+                      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px"><span>{{ t.name }}</span><span style="color:#6B7280">{{ t.units }} u.</span></div>
+                      <div style="height:5px;border-radius:99px;background:#F1F5F9;overflow:hidden"><div style="height:100%;border-radius:99px;background:#C3D9AB;width:{{ t.pct }}"></div></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;overflow:hidden">
+            <div style="padding:18px 20px;border-bottom:1px solid rgba(31,41,55,.07);display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <div style="font-family:'Montserrat';font-size:15px;font-weight:600">Últimos pedidos</div>
+              <button onClick="{{ goOrders }}" style="background:none;border:0;font-size:12px;font-weight:600;color:#5B7F3E;cursor:pointer">Ver todos</button>
+            </div>
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;min-width:620px">
+                <thead><tr>
+                  <sc-for list="{{ orderHeads }}" as="h" hint-placeholder-count="5">
+                    <th style="text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B7280;font-weight:600;padding:12px 20px;background:#F8FAFC">{{ h }}</th>
+                  </sc-for>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ recentOrders }}" as="o" hint-placeholder-count="5">
+                    <tr onClick="{{ o.open }}" style="cursor:pointer;border-top:1px solid rgba(31,41,55,.06)" style-hover="background:#F8FAFC">
+                      <td style="padding:14px 20px;font-size:13px;font-weight:600">{{ o.id }}</td>
+                      <td style="padding:14px 20px;font-size:13px">{{ o.client }}</td>
+                      <td style="padding:14px 20px;font-size:13px;color:#6B7280">{{ o.date }}</td>
+                      <td style="padding:14px 20px"><span style="font-size:11px;font-weight:600;border-radius:99px;padding:5px 11px;background:{{ o.stBg }};color:{{ o.stFg }}">{{ o.status }}</span></td>
+                      <td style="padding:14px 20px;font-size:13px;font-weight:600;text-align:right">{{ o.total }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isProducts }}">
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+            <div style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid rgba(31,41,55,.1);border-radius:999px;padding:11px 16px;flex:1 1 220px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4.2-4.2"></path></svg>
+              <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Buscar producto o SKU" style="border:0;background:none;outline:none;font-size:13px;width:100%;color:#1F2937" />
+            </div>
+            <button onClick="{{ newProduct }}" style="background:#1F2937;color:#fff;border:0;border-radius:999px;padding:12px 22px;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:#111827">+ Nuevo producto</button>
+          </div>
+          <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;overflow:hidden">
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;min-width:760px">
+                <thead><tr>
+                  <sc-for list="{{ prodHeads }}" as="h" hint-placeholder-count="7">
+                    <th style="text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B7280;font-weight:600;padding:12px 18px;background:#F8FAFC">{{ h }}</th>
+                  </sc-for>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ productRows }}" as="p" hint-placeholder-count="8">
+                    <tr style="border-top:1px solid rgba(31,41,55,.06)" style-hover="background:#F8FAFC">
+                      <td style="padding:12px 18px">
+                        <div style="display:flex;align-items:center;gap:11px">
+                          <span style="width:38px;height:38px;border-radius:10px;background:{{ p.tint }};overflow:hidden;display:block;flex:0 0 auto"><img src="{{ p.img }}" alt="" style="width:100%;height:100%;object-fit:cover" /></span>
+                          <span><span style="display:block;font-size:13.5px;font-weight:600">{{ p.name }}</span><span style="display:block;font-size:11px;color:#6B7280">{{ p.line }}</span></span>
+                        </div>
+                      </td>
+                      <td style="padding:12px 18px;font-size:12.5px;color:#6B7280">{{ p.sku }}</td>
+                      <td style="padding:12px 18px;font-size:13px">{{ p.price }}</td>
+                      <td style="padding:12px 18px;font-size:13px;color:#5B7F3E;font-weight:600">{{ p.promo }}</td>
+                      <td style="padding:12px 18px;font-size:13px">{{ p.stock }}</td>
+                      <td style="padding:12px 18px"><span style="font-size:11px;font-weight:600;border-radius:99px;padding:5px 10px;background:{{ p.flagBg }};color:#1F2937">{{ p.flag }}</span></td>
+                      <td style="padding:12px 18px;text-align:right;white-space:nowrap">
+                        <button onClick="{{ p.edit }}" style="background:none;border:1px solid rgba(31,41,55,.12);border-radius:99px;padding:7px 14px;font-size:11.5px;font-weight:600;cursor:pointer;color:#1F2937;margin-right:6px" style-hover="border-color:#C3D9AB">Editar</button>
+                        <button onClick="{{ p.toggle }}" style="background:none;border:0;font-size:11.5px;color:#9AA3B2;cursor:pointer">{{ p.toggleLabel }}</button>
+                      </td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isInventory }}">
+          <div style="display:flex;align-items:center;gap:12px;background:#FEF6E7;border:1px solid rgba(180,83,9,.2);border-radius:16px;padding:16px 20px">
+            <span style="width:8px;height:8px;border-radius:99px;background:#B45309"></span>
+            <span style="font-size:13px;color:#7C4A0B">{{ lowStockMsg }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:{{ dashCols }};gap:14px">
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;overflow:hidden">
+              <div style="padding:18px 20px;border-bottom:1px solid rgba(31,41,55,.07);font-family:'Montserrat';font-size:15px;font-weight:600">Stock por producto</div>
+              <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;min-width:520px">
+                  <thead><tr>
+                    <sc-for list="{{ invHeads }}" as="h" hint-placeholder-count="5">
+                      <th style="text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B7280;font-weight:600;padding:12px 18px;background:#F8FAFC">{{ h }}</th>
+                    </sc-for>
+                  </tr></thead>
+                  <tbody>
+                    <sc-for list="{{ inventory }}" as="i" hint-placeholder-count="8">
+                      <tr style="border-top:1px solid rgba(31,41,55,.06)">
+                        <td style="padding:13px 18px;font-size:13px;font-weight:600">{{ i.name }}</td>
+                        <td style="padding:13px 18px;font-size:13px">{{ i.stock }}</td>
+                        <td style="padding:13px 18px;font-size:13px;color:#6B7280">{{ i.min }}</td>
+                        <td style="padding:13px 18px"><div style="height:6px;border-radius:99px;background:#F1F5F9;overflow:hidden;min-width:80px"><div style="height:100%;border-radius:99px;background:{{ i.barColor }};width:{{ i.pct }}"></div></div></td>
+                        <td style="padding:13px 18px;text-align:right"><button onClick="{{ i.adjust }}" style="background:none;border:1px solid rgba(31,41,55,.12);border-radius:99px;padding:7px 13px;font-size:11.5px;font-weight:600;cursor:pointer;color:#1F2937">Ajustar</button></td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:20px">
+              <div style="font-family:'Montserrat';font-size:15px;font-weight:600;margin-bottom:16px">Movimientos</div>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <sc-for list="{{ movements }}" as="m" hint-placeholder-count="5">
+                  <div style="display:flex;gap:11px;align-items:flex-start">
+                    <span style="width:24px;height:24px;border-radius:8px;background:{{ m.bg }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#1F2937;flex:0 0 auto">{{ m.sign }}</span>
+                    <div style="min-width:0">
+                      <div style="font-size:13px;font-weight:600">{{ m.name }}</div>
+                      <div style="font-size:11.5px;color:#6B7280;margin-top:2px">{{ m.detail }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isOrders }}">
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ statusFilters }}" as="f" hint-placeholder-count="7">
+              <button onClick="{{ f.pick }}" style="background:{{ f.bg }};border:1px solid rgba(31,41,55,.1);border-radius:999px;padding:9px 15px;font-size:12.5px;font-weight:600;cursor:pointer;color:#1F2937">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:{{ dashCols }};gap:14px;align-items:start">
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;overflow:hidden">
+              <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;min-width:560px">
+                  <thead><tr>
+                    <sc-for list="{{ orderHeads }}" as="h" hint-placeholder-count="5">
+                      <th style="text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B7280;font-weight:600;padding:12px 18px;background:#F8FAFC">{{ h }}</th>
+                    </sc-for>
+                  </tr></thead>
+                  <tbody>
+                    <sc-for list="{{ orders }}" as="o" hint-placeholder-count="6">
+                      <tr onClick="{{ o.open }}" style="cursor:pointer;border-top:1px solid rgba(31,41,55,.06);background:{{ o.rowBg }}" style-hover="background:#F8FAFC">
+                        <td style="padding:14px 18px;font-size:13px;font-weight:600">{{ o.id }}</td>
+                        <td style="padding:14px 18px;font-size:13px">{{ o.client }}</td>
+                        <td style="padding:14px 18px;font-size:13px;color:#6B7280">{{ o.date }}</td>
+                        <td style="padding:14px 18px"><span style="font-size:11px;font-weight:600;border-radius:99px;padding:5px 11px;background:{{ o.stBg }};color:{{ o.stFg }}">{{ o.status }}</span></td>
+                        <td style="padding:14px 18px;font-size:13px;font-weight:600;text-align:right">{{ o.total }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px">
+              <div style="font-family:'Montserrat';font-size:16px;font-weight:600">Pedido {{ sel.id }}</div>
+              <div style="font-size:13px;color:#6B7280;line-height:1.7">{{ sel.client }}<br />{{ sel.phone }}<br />{{ sel.address }}</div>
+              <div style="height:1px;background:rgba(31,41,55,.08)"></div>
+              <sc-for list="{{ sel.items }}" as="i" hint-placeholder-count="2">
+                <div style="display:flex;justify-content:space-between;font-size:13px"><span>{{ i.name }} × {{ i.qty }}</span><span style="font-weight:600">{{ i.total }}</span></div>
+              </sc-for>
+              <div style="height:1px;background:rgba(31,41,55,.08)"></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:#6B7280">Total</span><span style="font-family:'Montserrat';font-size:19px;font-weight:600">{{ sel.total }}</span></div>
+              <label style="display:flex;flex-direction:column;gap:7px;margin-top:6px">
+                <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">Estado</span>
+                <select value="{{ sel.status }}" onChange="{{ onStatus }}" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:12px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937">
+                  <option value="Nuevo">Nuevo</option>
+                  <option value="Confirmado">Confirmado</option>
+                  <option value="Preparando">Preparando</option>
+                  <option value="Enviado">Enviado</option>
+                  <option value="Entregado">Entregado</option>
+                  <option value="Cancelado">Cancelado</option>
+                </select>
+              </label>
+              <label style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">Seguimiento</span>
+                <input value="{{ tracking }}" onChange="{{ onTracking }}" placeholder="Código de envío o nota" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:12px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937" style-focus="border-color:#C3D9AB;background:#fff" />
+              </label>
+              <button onClick="{{ saveOrder }}" style="background:#1F2937;color:#fff;border:0;border-radius:999px;padding:13px;font-size:13px;font-weight:600;cursor:pointer">Guardar cambios</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isClients }}">
+          <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;overflow:hidden">
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;min-width:700px">
+                <thead><tr>
+                  <sc-for list="{{ clientHeads }}" as="h" hint-placeholder-count="6">
+                    <th style="text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6B7280;font-weight:600;padding:12px 18px;background:#F8FAFC">{{ h }}</th>
+                  </sc-for>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ clients }}" as="c" hint-placeholder-count="6">
+                    <tr style="border-top:1px solid rgba(31,41,55,.06)" style-hover="background:#F8FAFC">
+                      <td style="padding:14px 18px;font-size:13.5px;font-weight:600">{{ c.name }}</td>
+                      <td style="padding:14px 18px;font-size:12.5px;color:#6B7280">{{ c.email }}</td>
+                      <td style="padding:14px 18px;font-size:12.5px;color:#6B7280">{{ c.phone }}</td>
+                      <td style="padding:14px 18px;font-size:13px">{{ c.orders }}</td>
+                      <td style="padding:14px 18px;font-size:13px;font-weight:600">{{ c.spent }}</td>
+                      <td style="padding:14px 18px;font-size:12.5px;color:#6B7280">{{ c.last }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isPromos }}">
+          <div style="display:grid;grid-template-columns:{{ dashCols }};gap:14px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ promos }}" as="p" hint-placeholder-count="3">
+                <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center">
+                  <div style="flex:1 1 200px;min-width:0">
+                    <div style="display:flex;align-items:center;gap:9px">
+                      <span style="font-size:11px;font-weight:600;border-radius:99px;padding:4px 10px;background:{{ p.bg }};color:#1F2937">{{ p.type }}</span>
+                      <span style="font-family:'Montserrat';font-size:16px;font-weight:600">{{ p.name }}</span>
+                    </div>
+                    <div style="font-size:12.5px;color:#6B7280;margin-top:8px">{{ p.detail }}</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-family:'Montserrat';font-size:18px;font-weight:600">{{ p.value }}</div>
+                    <div style="font-size:11.5px;color:#6B7280;margin-top:3px">{{ p.dates }}</div>
+                  </div>
+                  <button onClick="{{ p.toggle }}" style="background:{{ p.stBg }};border:0;border-radius:99px;padding:8px 14px;font-size:11.5px;font-weight:600;cursor:pointer;color:#1F2937">{{ p.state }}</button>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:13px">
+              <div style="font-family:'Montserrat';font-size:16px;font-weight:600">Nueva promoción</div>
+              <sc-for list="{{ promoFields }}" as="f" hint-placeholder-count="6">
+                <label style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">{{ f.label }}</span>
+                  <input placeholder="{{ f.ph }}" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:11px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937" style-focus="border-color:#C3D9AB;background:#fff" />
+                </label>
+              </sc-for>
+              <button style="background:#1F2937;color:#fff;border:0;border-radius:999px;padding:13px;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">Crear promoción</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isContent }}">
+          <div style="display:grid;grid-template-columns:{{ dashCols }};gap:14px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:22px">
+                <div style="font-family:'Montserrat';font-size:16px;font-weight:600;margin-bottom:16px">Hero de la home</div>
+                <div style="display:flex;flex-direction:column;gap:13px">
+                  <label style="display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">Título</span>
+                    <input value="{{ heroTitle }}" onChange="{{ onHeroTitle }}" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:11px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937" style-focus="border-color:#C3D9AB;background:#fff" />
+                  </label>
+                  <label style="display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">Subtítulo</span>
+                    <textarea value="{{ heroSub }}" onChange="{{ onHeroSub }}" rows="2" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:11px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937;resize:vertical" style-focus="border-color:#C3D9AB;background:#fff"></textarea>
+                  </label>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+                    <label style="display:flex;flex-direction:column;gap:6px">
+                      <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">CTA principal</span>
+                      <input value="{{ heroCta }}" onChange="{{ onHeroCta }}" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:11px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937" />
+                    </label>
+                    <label style="display:flex;flex-direction:column;gap:6px">
+                      <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">WhatsApp</span>
+                      <input value="{{ waNumber }}" onChange="{{ onWa }}" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:11px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:22px">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px">
+                  <div style="font-family:'Montserrat';font-size:16px;font-weight:600">Banners e imágenes</div>
+                  <button style="background:#F1F6EA;border:1px solid rgba(195,217,171,.9);border-radius:99px;padding:8px 14px;font-size:11.5px;font-weight:600;cursor:pointer;color:#1F2937">+ Subir imagen</button>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">
+                  <sc-for list="{{ banners }}" as="b" hint-placeholder-count="4">
+                    <div style="border:1px solid rgba(31,41,55,.08);border-radius:14px;overflow:hidden;background:#F8FAFC">
+                      <img src="{{ b.img }}" alt="" style="width:100%;height:84px;object-fit:cover;display:block" />
+                      <div style="padding:9px 11px;font-size:11.5px;color:#6B7280">{{ b.label }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px">
+              <div style="font-family:'Montserrat';font-size:16px;font-weight:600">Preview</div>
+              <div style="border:1px solid rgba(31,41,55,.08);border-radius:16px;background:linear-gradient(160deg,#fff,#F1F6EA);padding:22px">
+                <div style="font-family:'Montserrat';font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.05">{{ heroTitle }}</div>
+                <div style="font-size:12.5px;color:#6B7280;margin-top:10px;line-height:1.6">{{ heroSub }}</div>
+                <div style="display:inline-block;margin-top:16px;background:#1F2937;color:#fff;border-radius:99px;padding:9px 18px;font-size:12px;font-weight:600">{{ heroCta }}</div>
+              </div>
+              <button onClick="{{ publish }}" style="background:#C3D9AB;border:0;border-radius:999px;padding:14px;font-size:13px;font-weight:600;cursor:pointer;color:#1F2937">{{ publishLabel }}</button>
+              <p style="font-size:11.5px;color:#9AA3B2;line-height:1.6;margin:0">Los cambios quedan en borrador hasta que publiques. Se registra quién publicó y cuándo.</p>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isReports }}">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">Desde</span>
+              <input type="date" value="2026-08-01" style="border:1px solid rgba(31,41,55,.12);background:#fff;border-radius:11px;padding:11px 14px;font-size:13px;color:#1F2937;outline:none" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">Hasta</span>
+              <input type="date" value="2026-09-08" style="border:1px solid rgba(31,41,55,.12);background:#fff;border-radius:11px;padding:11px 14px;font-size:13px;color:#1F2937;outline:none" />
+            </label>
+            <button style="background:#1F2937;color:#fff;border:0;border-radius:999px;padding:12px 20px;font-size:12.5px;font-weight:600;cursor:pointer">Aplicar</button>
+            <button style="background:#fff;border:1px solid rgba(31,41,55,.12);border-radius:999px;padding:12px 20px;font-size:12.5px;font-weight:600;cursor:pointer;color:#1F2937">Exportar CSV</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px">
+            <sc-for list="{{ reportCards }}" as="r" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:20px">
+                <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6B7280;font-weight:600">{{ r.label }}</div>
+                <div style="font-family:'Montserrat';font-size:24px;font-weight:600;margin-top:10px">{{ r.value }}</div>
+                <div style="font-size:11.5px;color:#6B7280;margin-top:5px">{{ r.note }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:22px">
+              <div style="font-family:'Montserrat';font-size:15px;font-weight:600;margin-bottom:16px">Ventas por categoría</div>
+              <div style="display:flex;flex-direction:column;gap:13px">
+                <sc-for list="{{ byCategory }}" as="c" hint-placeholder-count="5">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:6px"><span>{{ c.name }}</span><span style="color:#6B7280">{{ c.value }}</span></div>
+                    <div style="height:6px;border-radius:99px;background:#F1F5F9;overflow:hidden"><div style="height:100%;border-radius:99px;background:{{ c.color }};width:{{ c.pct }}"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:22px">
+              <div style="font-family:'Montserrat';font-size:15px;font-weight:600;margin-bottom:16px">Pedidos por estado</div>
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <sc-for list="{{ byStatus }}" as="s" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:11px">
+                    <span style="width:8px;height:8px;border-radius:99px;background:{{ s.color }}"></span>
+                    <span style="font-size:13px;flex:1">{{ s.name }}</span>
+                    <span style="font-size:13px;font-weight:600">{{ s.count }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSimple }}">
+          <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:clamp(20px,3vw,30px)">
+            <div style="font-family:'Montserrat';font-size:17px;font-weight:600">{{ title }}</div>
+            <p style="font-size:13.5px;color:#6B7280;line-height:1.7;margin:10px 0 0;max-width:60ch">{{ simpleIntro }}</p>
+            <div style="display:flex;flex-direction:column;gap:1px;background:rgba(31,41,55,.07);border:1px solid rgba(31,41,55,.07);border-radius:14px;overflow:hidden;margin-top:22px">
+              <sc-for list="{{ simpleRows }}" as="r" hint-placeholder-count="5">
+                <div style="background:#fff;display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:15px 18px">
+                  <span style="font-size:13.5px;font-weight:600;flex:1 1 160px">{{ r.name }}</span>
+                  <span style="font-size:12.5px;color:#6B7280;flex:1 1 160px">{{ r.detail }}</span>
+                  <span style="font-size:11px;font-weight:600;border-radius:99px;padding:5px 11px;background:{{ r.bg }};color:#1F2937">{{ r.state }}</span>
+                  <button style="background:none;border:1px solid rgba(31,41,55,.12);border-radius:99px;padding:7px 14px;font-size:11.5px;font-weight:600;cursor:pointer;color:#1F2937">Editar</button>
+                </div>
+              </sc-for>
+            </div>
+            <button style="margin-top:18px;background:#1F2937;color:#fff;border:0;border-radius:999px;padding:13px 22px;font-size:12.5px;font-weight:600;cursor:pointer">{{ simpleCta }}</button>
+          </div>
+        </sc-if>
+
+      </main>
+    </div>
+  </div>
+
+  <sc-if value="{{ editor }}">
+    <div onClick="{{ closeEditor }}" style="position:fixed;inset:0;z-index:80;background:rgba(31,41,55,.34);backdrop-filter:blur(4px);animation:admIn .3s both"></div>
+    <aside style="position:fixed;z-index:81;top:0;right:0;bottom:0;width:min(94vw,520px);background:#F8FAFC;display:flex;flex-direction:column;animation:admIn .35s both;box-shadow:-30px 0 60px -40px rgba(31,41,55,.6)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:#fff;border-bottom:1px solid rgba(31,41,55,.07)">
+        <div>
+          <div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:#6B7280;font-weight:600">Producto</div>
+          <div style="font-family:'Montserrat';font-size:18px;font-weight:600;margin-top:3px">{{ editor.title }}</div>
+        </div>
+        <button onClick="{{ closeEditor }}" style="background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:#6B7280">×</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:22px 24px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <sc-for list="{{ editor.images }}" as="im" hint-placeholder-count="3">
+            <span style="width:74px;height:74px;border-radius:14px;overflow:hidden;background:#EEF2FF;display:block"><img src="{{ im }}" alt="" style="width:100%;height:100%;object-fit:cover" /></span>
+          </sc-for>
+          <button style="width:74px;height:74px;border-radius:14px;border:1px dashed rgba(31,41,55,.2);background:#fff;cursor:pointer;font-size:20px;color:#6B7280">+</button>
+        </div>
+        <sc-for list="{{ editor.fields }}" as="f" hint-placeholder-count="10">
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">{{ f.label }}</span>
+            <input value="{{ f.value }}" onChange="{{ f.onChange }}" style="border:1px solid rgba(31,41,55,.12);background:#fff;border-radius:11px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937" style-focus="border-color:#C3D9AB" />
+          </label>
+        </sc-for>
+        <sc-for list="{{ editor.areas }}" as="a" hint-placeholder-count="4">
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">{{ a.label }}</span>
+            <textarea rows="3" value="{{ a.value }}" onChange="{{ a.onChange }}" style="border:1px solid rgba(31,41,55,.12);background:#fff;border-radius:11px;padding:12px 14px;font-size:13.5px;outline:none;color:#1F2937;resize:vertical;line-height:1.6"></textarea>
+          </label>
+        </sc-for>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <sc-for list="{{ editor.flags }}" as="fl" hint-placeholder-count="4">
+            <button onClick="{{ fl.toggle }}" style="background:{{ fl.bg }};border:1px solid rgba(31,41,55,.12);border-radius:99px;padding:9px 15px;font-size:12px;font-weight:600;cursor:pointer;color:#1F2937">{{ fl.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:18px 24px;background:#fff;border-top:1px solid rgba(31,41,55,.07);display:flex;gap:10px">
+        <button onClick="{{ saveProduct }}" style="flex:1;background:#1F2937;color:#fff;border:0;border-radius:999px;padding:14px;font-size:13px;font-weight:600;cursor:pointer">Guardar producto</button>
+        <button onClick="{{ closeEditor }}" style="background:none;border:1px solid rgba(31,41,55,.12);border-radius:999px;padding:14px 20px;font-size:13px;font-weight:600;cursor:pointer;color:#1F2937">Cancelar</button>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed;z-index:99;left:50%;transform:translateX(-50%);bottom:26px;background:#1F2937;color:#fff;border-radius:999px;padding:12px 22px;font-size:12.5px;font-weight:500;animation:admIn .3s both">{{ toast }}</div>
+  </sc-if>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+const P = [
+  { id:'essential', name:'Essential', line:'Esencial', sku:'FLX-ESS-60', price:185000, promo:159000, stock:42, min:15, img:'assets/prod-essential.png', tint:'#FFE3EC', flag:'Más vendido', color:'#FF83A7', active:true },
+  { id:'active', name:'Active', line:'Activa', sku:'FLX-ACT-60', price:195000, promo:0, stock:18, min:12, img:'assets/prod-active.png', tint:'#E9DEFF', flag:'Nuevo', color:'#C9A7FF', active:true },
+  { id:'mental', name:'Mental Balance', line:'Salud Mental', sku:'FLX-MEN-60', price:189000, promo:0, stock:27, min:12, img:'assets/prod-mental.png', tint:'#DFE9FF', flag:'Destacado', color:'#AFC8FF', active:true },
+  { id:'women', name:'Women', line:'Women', sku:'FLX-WOM-60', price:199000, promo:169000, stock:31, min:15, img:'assets/prod-women.png', tint:'#FFE1EF', flag:'Promo', color:'#FFD6E8', active:true },
+  { id:'digestive', name:'Digestive', line:'Digestiva', sku:'FLX-DIG-60', price:175000, promo:0, stock:24, min:12, img:'assets/life-water.png', tint:'#D8F5FA', flag:'—', color:'#8FE9F4', active:true },
+  { id:'glow', name:'Glow', line:'Glow', sku:'FLX-GLW-60', price:182000, promo:0, stock:9, min:12, img:'assets/life-skin.png', tint:'#E2E9FF', flag:'—', color:'#B7C9FF', active:true },
+  { id:'hormonal', name:'Hormonal Balance', line:'Salud Hormonal', sku:'FLX-HOR-60', price:205000, promo:0, stock:6, min:10, img:'assets/life-capsule.png', tint:'#F8DCEA', flag:'—', color:'#E07AAE', active:false },
+  { id:'greens', name:'Daily Greens', line:'Esencial', sku:'FLX-GRN-300', price:210000, promo:0, stock:36, min:14, img:'assets/life-hand.png', tint:'#E6F0D9', flag:'Nuevo', color:'#C3D9AB', active:true }
+];
+
+const ORDERS = [
+  { id:'FLX-2841', client:'Camila Rojas', phone:'0981 445 220', address:'Av. Mcal. López 1234, Asunción', date:'08 sep 2026', status:'Nuevo', items:[{ name:'Essential', qty:2, total:318000 }, { name:'Mental Balance', qty:1, total:189000 }] },
+  { id:'FLX-2840', client:'Lucía Benítez', phone:'0985 112 903', address:'Denis Roa 887, Asunción', date:'08 sep 2026', status:'Confirmado', items:[{ name:'Women', qty:1, total:169000 }] },
+  { id:'FLX-2839', client:'Sofía Martínez', phone:'0971 330 118', address:'Villa Morra, Asunción', date:'07 sep 2026', status:'Preparando', items:[{ name:'Daily Greens', qty:1, total:210000 }, { name:'Digestive', qty:1, total:175000 }] },
+  { id:'FLX-2838', client:'Ana Paredes', phone:'0961 774 502', address:'San Lorenzo, Central', date:'07 sep 2026', status:'Enviado', items:[{ name:'Active', qty:2, total:390000 }] },
+  { id:'FLX-2837', client:'Belén Duarte', phone:'0982 664 771', address:'Luque, Central', date:'06 sep 2026', status:'Entregado', items:[{ name:'Glow', qty:1, total:182000 }] },
+  { id:'FLX-2836', client:'Marina Cabrera', phone:'0975 220 419', address:'Fernando de la Mora', date:'05 sep 2026', status:'Cancelado', items:[{ name:'Essential', qty:1, total:159000 }] }
+];
+
+const MENU = [
+  ['dashboard', 'Dashboard'], ['productos', 'Productos'], ['categorias', 'Categorías'], ['inventario', 'Inventario'],
+  ['pedidos', 'Pedidos', 3], ['clientes', 'Clientes'], ['promociones', 'Promociones'], ['cupones', 'Cupones'],
+  ['contenido', 'Contenido web'], ['banners', 'Banners'], ['testimonios', 'Testimonios'], ['newsletter', 'Newsletter'],
+  ['reportes', 'Reportes'], ['configuracion', 'Configuración']
+];
+
+const SIMPLE = {
+  categorias: { intro:'Las categorías ordenan el catálogo por línea de producto y alimentan los filtros de la tienda.', cta:'+ Nueva categoría', rows:[['Esencial', '2 productos · color #FF83A7', 'Visible'], ['Salud Hormonal', '1 producto · color #E07AAE', 'Visible'], ['Salud Mental', '1 producto · color #AFC8FF', 'Visible'], ['Activa', '1 producto · color #C9A7FF', 'Visible'], ['Women', '1 producto · color #FFD6E8', 'Visible'], ['Digestiva', '1 producto · color #8FE9F4', 'Visible'], ['Glow', '1 producto · color #B7C9FF', 'Oculta']] },
+  cupones: { intro:'Cupones de descuento con vigencia, tope de uso y mínimo de compra.', cta:'+ Nuevo cupón', rows:[['FLUX10', '10% · válido hasta 30 sep', 'Activo'], ['BIENVENIDA', 'Gs. 25.000 · primera compra', 'Activo'], ['RUTINA3', '15% en combos de 3', 'Programado'], ['INVIERNO', '12% · vencido', 'Inactivo']] },
+  banners: { intro:'Banners de home, catálogo y campañas. Se pueden programar por fecha.', cta:'+ Nuevo banner', rows:[['Home · Hero principal', 'Imagen + título + CTA', 'Publicado'], ['Home · Franja envío gratis', 'Texto simple', 'Publicado'], ['Catálogo · Promo Women', 'Imagen lateral', 'Programado'], ['Home · Daily Greens', 'Bloque destacado', 'Borrador']] },
+  testimonios: { intro:'Comentarios de clientas que se muestran en la home. Se aprueban antes de publicar.', cta:'+ Nuevo testimonio', rows:[['Camila R. · Essential', '4 meses de uso', 'Publicado'], ['Lucía B. · Rutina completa', '6 meses de uso', 'Publicado'], ['Sofía M. · Mental Balance', '3 meses de uso', 'Publicado'], ['Ana P. · Women', '5 meses de uso', 'Pendiente']] },
+  newsletter: { intro:'Suscriptoras y campañas enviadas desde la tienda.', cta:'Exportar suscriptoras', rows:[['1.284 suscriptoras', '+96 este mes', 'Activo'], ['Campaña · Rutina de mañana', 'Enviada 02 sep · 41% apertura', 'Enviada'], ['Campaña · Daily Greens', 'Programada 12 sep', 'Programada'], ['Automatización · Bienvenida', '3 emails', 'Activa']] },
+  configuracion: { intro:'Datos del comercio, envíos, medios de pago y usuarios del panel.', cta:'Guardar configuración', rows:[['Datos del comercio', 'FLUX NUTRITION by FIVA · RUC 80012345-6', 'Completo'], ['Envíos', 'Gran Asunción Gs. 35.000 · interior Gs. 45.000', 'Activo'], ['Medios de pago', 'Transferencia, tarjeta, efectivo', 'Activo'], ['Usuarios', '2 administradoras · 1 editora', 'Activo'], ['WhatsApp', '+595 981 000 000', 'Conectado']] }
+};
+
+class Component extends DCLogic {
+  state = {
+    logged:false, loginUser:'admin@fluxnutrition.py', loginPass:'', section:'dashboard',
+    w:1280, sidebar:false, q:'', selOrder:'FLX-2841', tracking:'', statusFilter:'Todos',
+    editor:null, editForm:{}, toast:'', range:'14d', publishing:false,
+    heroTitle:'MÁS VIDA EN TU DÍA.', heroSub:'Ciencia, nutrición y bienestar para acompañar tu mejor versión.',
+    heroCta:'Descubrir FLUX', wa:'+595 981 000 000',
+    products:P.map(p => Object.assign({}, p)), orders:ORDERS.map(o => Object.assign({}, o))
+  };
+
+  componentDidMount() {
+    this._r = () => this.setState({ w: window.innerWidth });
+    window.addEventListener('resize', this._r);
+    this.setState({ w: window.innerWidth });
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._r); clearTimeout(this._t); }
+  fmt(n) { return 'Gs. ' + Math.round(n).toLocaleString('es-PY').replace(/,/g, '.'); }
+  flash(m) { clearTimeout(this._t); this.setState({ toast:m }); this._t = setTimeout(() => this.setState({ toast:'' }), 2200); }
+  go(section) { this.setState({ section, sidebar:false }); window.scrollTo(0, 0); }
+
+  statusColors(st) {
+    const map = { Nuevo:['#EEF2FF', '#3B4E86'], Confirmado:['#F1F6EA', '#4A6B31'], Preparando:['#FEF6E7', '#8A5A11'],
+      Enviado:['#E6F6FA', '#1E6675'], Entregado:['#F1F6EA', '#3F5F27'], Cancelado:['#FDECEF', '#8C2E45'] };
+    return map[st] || ['#F1F5F9', '#4B5563'];
+  }
+
+  openEditor(p) {
+    const base = p || { id:'', name:'', line:'', sku:'', price:0, promo:0, stock:0, min:10, img:'assets/prod-essential.png', flag:'—' };
+    this.setState({ editor: p ? 'edit' : 'new', editForm: Object.assign({ bene:'', ingr:'', uso:'', rel:'' }, base) });
+  }
+  setEdit(k) { return e => { const v = e.target.value; this.setState(s => ({ editForm: Object.assign({}, s.editForm, { [k]:v }) })); }; }
+
+  renderVals() {
+    const s = this.state, self = this;
+    const desktop = s.w >= 1000;
+    const sec = s.section;
+    const titles = { dashboard:'Dashboard', productos:'Productos', categorias:'Categorías', inventario:'Inventario',
+      pedidos:'Pedidos', clientes:'Clientes', promociones:'Promociones', cupones:'Cupones', contenido:'Contenido web',
+      banners:'Banners', testimonios:'Testimonios', newsletter:'Newsletter', reportes:'Reportes', configuracion:'Configuración' };
+
+    const chartData = [42, 58, 51, 67, 74, 61, 88, 79, 95, 71, 84, 102, 93, 118];
+    const days = ['26', '27', '28', '29', '30', '31', '01', '02', '03', '04', '05', '06', '07', '08'];
+    const maxC = Math.max.apply(null, chartData);
+
+    const orders = s.orders.filter(o => s.statusFilter === 'Todos' || o.status === s.statusFilter);
+    const decorateOrder = o => {
+      const c = this.statusColors(o.status);
+      const total = o.items.reduce((a, i) => a + i.total, 0);
+      return { id:o.id, client:o.client, date:o.date, status:o.status, total:this.fmt(total),
+        stBg:c[0], stFg:c[1], rowBg: s.selOrder === o.id ? '#F8FAFC' : 'transparent',
+        open:() => this.setState({ selOrder:o.id, section:'pedidos' }) };
+    };
+    const selRaw = s.orders.find(o => o.id === s.selOrder) || s.orders[0];
+    const selTotal = selRaw.items.reduce((a, i) => a + i.total, 0);
+
+    const simple = SIMPLE[sec];
+    const ef = s.editForm;
+
+    return {
+      needsLogin:!s.logged, loggedIn:s.logged,
+      loginUser:s.loginUser, loginPass:s.loginPass,
+      onLoginUser:e => this.setState({ loginUser:e.target.value }),
+      onLoginPass:e => this.setState({ loginPass:e.target.value }),
+      doLogin:() => this.setState({ logged:true }),
+      logout:() => this.setState({ logged:false, section:'dashboard' }),
+
+      sidebarDisplay: desktop || s.sidebar ? 'flex' : 'none',
+      sidebarPosition: desktop ? 'sticky' : 'fixed',
+      mobileOnly: desktop ? 'none' : 'flex',
+      deskOnly: desktop ? 'flex' : 'none',
+      openSidebar:() => this.setState({ sidebar:true }), closeSidebar:() => this.setState({ sidebar:false }),
+      menu:MENU.map(([id, name, count]) => ({ name, count:count || 0,
+        bg: sec === id ? '#F1F6EA' : 'transparent', weight: sec === id ? 600 : 500,
+        dot: sec === id ? '#C3D9AB' : 'rgba(31,41,55,.18)', go:() => this.go(id) })),
+      title:titles[sec] || 'Panel',
+      q:s.q, onQ:e => this.setState({ q:e.target.value }),
+      goDash:() => this.go('dashboard'), goOrders:() => this.go('pedidos'),
+
+      isDash:sec === 'dashboard', isProducts:sec === 'productos', isInventory:sec === 'inventario',
+      isOrders:sec === 'pedidos', isClients:sec === 'clientes', isPromos:sec === 'promociones',
+      isContent:sec === 'contenido', isReports:sec === 'reportes', isSimple:!!simple,
+      dashCols: desktop ? 'minmax(0,2fr) minmax(0,1fr)' : 'minmax(0,1fr)',
+
+      kpis:[
+        { label:'Ventas de hoy', value:this.fmt(1840000), delta:'+18% vs. ayer', color:'#4A6B31' },
+        { label:'Ventas del mes', value:this.fmt(28460000), delta:'+11% vs. agosto', color:'#4A6B31' },
+        { label:'Pedidos del mes', value:'164', delta:'23 pendientes de envío', color:'#6B7280' },
+        { label:'Ticket promedio', value:this.fmt(214000), delta:'+4% vs. agosto', color:'#4A6B31' }
+      ],
+      ranges:[{ id:'7d', label:'7 días' }, { id:'14d', label:'14 días' }, { id:'30d', label:'30 días' }].map(r => ({ label:r.label, bg: s.range === r.id ? '#F1F6EA' : '#fff', pick:() => this.setState({ range:r.id }) })),
+      barGap: desktop ? '10px' : '5px',
+      chart:chartData.map((v, i) => ({ day:days[i], h: Math.max(8, Math.round(v / maxC * 168)) + 'px', bg: i === chartData.length - 1 ? '#1F2937' : '#C3D9AB' })),
+      lowStock:s.products.filter(p => p.stock <= p.min).map(p => ({ name:p.name, stock:p.stock, color:p.color })),
+      topProducts:[{ name:'Essential', units:64 }, { name:'Women', units:41 }, { name:'Mental Balance', units:33 }, { name:'Daily Greens', units:27 }].map(t => ({ name:t.name, units:t.units, pct: Math.round(t.units / 64 * 100) + '%' })),
+      orderHeads:['Pedido', 'Cliente', 'Fecha', 'Estado', 'Total'],
+      recentOrders:s.orders.slice(0, 5).map(decorateOrder),
+
+      prodHeads:['Producto', 'SKU', 'Precio', 'Promo', 'Stock', 'Etiqueta', ''],
+      productRows:s.products.filter(p => !s.q.trim() || (p.name + p.sku + p.line).toLowerCase().includes(s.q.trim().toLowerCase())).map(p => ({
+        name:p.name, line:p.line, sku:p.sku, img:p.img, tint:p.tint,
+        price:this.fmt(p.price), promo: p.promo ? this.fmt(p.promo) : '—', stock:p.stock + ' u.',
+        flag:p.flag, flagBg: p.flag === '—' ? '#F1F5F9' : '#F1F6EA',
+        toggleLabel: p.active ? 'Desactivar' : 'Activar',
+        toggle:() => this.setState(st => ({ products: st.products.map(x => x.id === p.id ? Object.assign({}, x, { active:!x.active }) : x) })),
+        edit:() => this.openEditor(p)
+      })),
+      newProduct:() => this.openEditor(null),
+
+      lowStockMsg: s.products.filter(p => p.stock <= p.min).length + ' productos por debajo del stock mínimo. Revisá reposición antes del fin de semana.',
+      invHeads:['Producto', 'Stock actual', 'Mínimo', 'Nivel', ''],
+      inventory:s.products.map(p => ({ name:p.name, stock:p.stock + ' u.', min:p.min + ' u.',
+        pct: Math.min(100, Math.round(p.stock / (p.min * 3) * 100)) + '%',
+        barColor: p.stock <= p.min ? '#E9A23B' : '#C3D9AB',
+        adjust:() => this.flash('Ajuste de stock registrado para ' + p.name) })),
+      movements:[
+        { sign:'+', bg:'#F1F6EA', name:'Essential · entrada', detail:'+40 u. · lote L-2609 · 06 sep' },
+        { sign:'−', bg:'#FDECEF', name:'Women · salida', detail:'−12 u. · pedidos del día · 07 sep' },
+        { sign:'+', bg:'#F1F6EA', name:'Daily Greens · entrada', detail:'+25 u. · primera producción · 05 sep' },
+        { sign:'=', bg:'#EEF2FF', name:'Glow · ajuste', detail:'−2 u. · control de calidad · 04 sep' },
+        { sign:'−', bg:'#FDECEF', name:'Active · salida', detail:'−8 u. · pedidos del día · 04 sep' }
+      ],
+
+      statusFilters:['Todos', 'Nuevo', 'Confirmado', 'Preparando', 'Enviado', 'Entregado', 'Cancelado'].map(f => ({ label:f, bg: s.statusFilter === f ? '#C3D9AB' : '#fff', pick:() => this.setState({ statusFilter:f }) })),
+      orders:orders.map(decorateOrder),
+      sel:{ id:selRaw.id, client:selRaw.client, phone:selRaw.phone, address:selRaw.address, status:selRaw.status,
+        total:this.fmt(selTotal), items:selRaw.items.map(i => ({ name:i.name, qty:i.qty, total:this.fmt(i.total) })) },
+      onStatus:e => { const v = e.target.value; this.setState(st => ({ orders: st.orders.map(o => o.id === st.selOrder ? Object.assign({}, o, { status:v }) : o) })); },
+      tracking:s.tracking, onTracking:e => this.setState({ tracking:e.target.value }),
+      saveOrder:() => this.flash('Pedido ' + selRaw.id + ' actualizado'),
+
+      clientHeads:['Cliente', 'Email', 'Teléfono', 'Pedidos', 'Total comprado', 'Última compra'],
+      clients:[
+        { name:'Camila Rojas', email:'camila.rojas@email.com', phone:'0981 445 220', orders:6, spent:this.fmt(1180000), last:'08 sep 2026' },
+        { name:'Lucía Benítez', email:'lucia.b@email.com', phone:'0985 112 903', orders:4, spent:this.fmt(742000), last:'08 sep 2026' },
+        { name:'Sofía Martínez', email:'sofi.mtz@email.com', phone:'0971 330 118', orders:3, spent:this.fmt(568000), last:'07 sep 2026' },
+        { name:'Ana Paredes', email:'ana.paredes@email.com', phone:'0961 774 502', orders:7, spent:this.fmt(1425000), last:'07 sep 2026' },
+        { name:'Belén Duarte', email:'belen.d@email.com', phone:'0982 664 771', orders:2, spent:this.fmt(351000), last:'06 sep 2026' },
+        { name:'Marina Cabrera', email:'marina.c@email.com', phone:'0975 220 419', orders:1, spent:this.fmt(159000), last:'05 sep 2026' }
+      ],
+
+      promos:[
+        { type:'Descuento', name:'Promo Women', detail:'Aplica a la línea Women · mínimo Gs. 150.000', value:'−15%', dates:'01 sep → 30 sep', bg:'#FFE1EF', state:'Activa', stBg:'#F1F6EA' },
+        { type:'Combo', name:'Rutina Energía', detail:'Essential + Mental Balance', value:this.fmt(313000), dates:'Permanente', bg:'#EEF2FF', state:'Activa', stBg:'#F1F6EA' },
+        { type:'Categoría', name:'Lanzamiento Greens', detail:'Daily Greens · primeras 100 unidades', value:'−10%', dates:'12 sep → 12 oct', bg:'#E6F0D9', state:'Programada', stBg:'#FEF6E7' }
+      ].map(p => Object.assign({}, p, { toggle:() => this.flash(p.name + ' actualizada') })),
+      promoFields:[{ label:'Nombre', ph:'Promo primavera' }, { label:'Tipo', ph:'Porcentaje o monto fijo' }, { label:'Valor', ph:'15% o Gs. 25.000' }, { label:'Mínimo de compra', ph:'Gs. 150.000' }, { label:'Desde', ph:'01/10/2026' }, { label:'Hasta', ph:'31/10/2026' }, { label:'Productos aplicables', ph:'Essential, Women' }],
+
+      heroTitle:s.heroTitle, onHeroTitle:e => this.setState({ heroTitle:e.target.value }),
+      heroSub:s.heroSub, onHeroSub:e => this.setState({ heroSub:e.target.value }),
+      heroCta:s.heroCta, onHeroCta:e => this.setState({ heroCta:e.target.value }),
+      waNumber:s.wa, onWa:e => this.setState({ wa:e.target.value }),
+      banners:[{ img:'assets/life-skin.png', label:'Home · hero' }, { img:'assets/life-woman.png', label:'Editorial' }, { img:'assets/life-water.png', label:'Rutinas' }, { img:'assets/life-sky.png', label:'Newsletter' }],
+      publish:() => { this.setState({ publishing:true }); this.flash('Cambios publicados en la tienda'); },
+      publishLabel:s.publishing ? 'Publicado' : 'Publicar cambios',
+
+      reportCards:[{ label:'Ventas del período', value:this.fmt(28460000), note:'164 pedidos' }, { label:'Ticket promedio', value:this.fmt(214000), note:'+4% vs. período anterior' }, { label:'Clientas recurrentes', value:'38%', note:'62 de 164 pedidos' }, { label:'Unidades vendidas', value:'389', note:'8 productos activos' }],
+      byCategory:[{ name:'Esencial', v:9800000, color:'#FF83A7' }, { name:'Women', v:6200000, color:'#FFD6E8' }, { name:'Salud Mental', v:5100000, color:'#AFC8FF' }, { name:'Activa', v:4300000, color:'#C9A7FF' }, { name:'Digestiva', v:3060000, color:'#8FE9F4' }].map(c => ({ name:c.name, value:this.fmt(c.v), color:c.color, pct: Math.round(c.v / 9800000 * 100) + '%' })),
+      byStatus:[{ name:'Nuevo', count:12, color:'#AFC8FF' }, { name:'Confirmado', count:18, color:'#C3D9AB' }, { name:'Preparando', count:9, color:'#E9A23B' }, { name:'Enviado', count:21, color:'#8FE9F4' }, { name:'Entregado', count:98, color:'#4A6B31' }, { name:'Cancelado', count:6, color:'#E07AAE' }],
+
+      simpleIntro: simple ? simple.intro : '', simpleCta: simple ? simple.cta : '',
+      simpleRows: simple ? simple.rows.map(r => ({ name:r[0], detail:r[1], state:r[2], bg: /Activ|Public|Complet|Conect|Enviada/.test(r[2]) ? '#F1F6EA' : /Program|Pendiente/.test(r[2]) ? '#FEF6E7' : '#F1F5F9' })) : [],
+
+      editor: s.editor ? {
+        title: s.editor === 'new' ? 'Nuevo producto' : ef.name,
+        images:[ef.img || 'assets/prod-essential.png', 'assets/life-capsule.png'],
+        fields:[['name', 'Nombre'], ['sku', 'SKU'], ['line', 'Categoría'], ['price', 'Precio'], ['promo', 'Precio promocional'], ['stock', 'Stock'], ['min', 'Stock mínimo'], ['rel', 'Productos relacionados']].map(([k, label]) => ({ label, value: ef[k] === undefined || ef[k] === 0 ? '' : String(ef[k]), onChange:this.setEdit(k) })),
+        areas:[['short', 'Descripción corta'], ['bene', 'Beneficios'], ['ingr', 'Ingredientes'], ['uso', 'Modo de uso']].map(([k, label]) => ({ label, value: ef[k] || '', onChange:this.setEdit(k) })),
+        flags:['Destacado', 'Más vendido', 'Nuevo', 'Activo'].map(f => ({ label:f, bg: f === ef.flag || (f === 'Activo' && ef.active) ? '#F1F6EA' : '#fff', toggle:() => this.flash(f + ' actualizado') }))
+      } : null,
+      closeEditor:() => this.setState({ editor:null }),
+      saveProduct:() => { this.setState({ editor:null }); this.flash('Producto guardado'); },
+      toast:s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
