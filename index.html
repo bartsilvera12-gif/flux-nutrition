@@ -357,9 +357,6 @@
   }
 
   @media (max-width: 640px) {
-    /* Everything → single column */
-    [data-goal-grid] { grid-template-columns: 1fr !important; grid-auto-rows: 140px !important; }
-    [data-goal-grid] > button { grid-column: span 1 !important; height: 140px; }
 
     [data-about-grid] { gap: 32px !important; }
 
@@ -370,11 +367,14 @@
     .flux-testi-wrap { grid-template-columns: 1fr !important; max-height: 520px !important; }
     .flux-testi-col.up-slow { display: none !important; }
 
-    footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"] { grid-template-columns: 1fr !important; gap: 24px !important; }
-    footer > div > div[style*="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between"] { flex-direction: column !important; align-items: flex-start !important; gap: 14px !important; }
-    footer img[alt="FLUX NUTRITION by FIVA"] { height: 40px !important; }
-    footer p { font-size: 13px !important; line-height: 1.55 !important; }
-    footer a { font-size: 13px !important; }
+    footer { padding: 48px 0 24px !important; }
+    footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"] { grid-template-columns: 1fr !important; gap: 36px !important; }
+    footer > div > div[style*="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between"] { flex-direction: column !important; align-items: flex-start !important; gap: 18px !important; margin-top: 40px !important; padding-top: 24px !important; }
+    footer img[alt="FLUX NUTRITION by FIVA"] { height: 38px !important; }
+    footer p { font-size: 13px !important; line-height: 1.6 !important; margin-top: 16px !important; }
+    footer a { font-size: 13.5px !important; }
+    footer > div > div > div > div[style*="letter-spacing:.2em"] { margin-bottom: 14px !important; }
+    footer > div > div > div > div[style*="flex-direction:column"] { gap: 10px !important; }
 
     /* Hero title: reducir para no cortar */
     section h1[style*="font-size:clamp(48px,7vw,96px)"] { font-size: clamp(38px,10vw,64px) !important; }
@@ -612,17 +612,16 @@
         </div>
         <style>
           @media (max-width:900px){
-            [data-goal-grid]{grid-template-columns:repeat(4,1fr)!important;grid-auto-rows:180px!important;gap:10px!important}
-            [data-goal-grid] > button{grid-column:span 2!important;grid-row:span 1!important}
-            [data-goal-grid] > button:nth-child(1),[data-goal-grid] > button:nth-child(5){grid-column:span 4!important}
-          }
-          @media (max-width:520px){
-            [data-goal-grid]{grid-template-columns:1fr!important;grid-auto-rows:140px!important;gap:10px!important}
-            [data-goal-grid] > button{grid-column:span 1!important}
-            [data-goal-grid] > button > img{width:44%!important;right:-4%!important;max-height:120%!important}
-            [data-goal-grid] > button > div{left:16px!important;right:auto!important;bottom:14px!important;max-width:55%!important}
-            [data-goal-grid] > button > div > div:first-child{font-size:22px!important}
+            [data-goal-grid]{grid-template-columns:repeat(2,1fr)!important;grid-auto-rows:170px!important;gap:10px!important}
+            [data-goal-grid] > button{grid-column:span 1!important;grid-row:span 1!important}
+            [data-goal-grid] > button > img{width:55%!important;right:-6%!important;max-height:110%!important}
+            [data-goal-grid] > button > div{left:14px!important;right:auto!important;bottom:14px!important;max-width:60%!important}
+            [data-goal-grid] > button > div > div:first-child{font-size:20px!important}
             [data-goal-grid] > button > span{top:12px!important;left:14px!important;font-size:9.5px!important}
+          }
+          @media (max-width:420px){
+            [data-goal-grid]{grid-auto-rows:150px!important}
+            [data-goal-grid] > button > div > div:first-child{font-size:18px!important}
           }
         </style>
       </div>
