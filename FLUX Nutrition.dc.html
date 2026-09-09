@@ -347,7 +347,7 @@
     .flux-spotlight-sticky { position: static !important; }
 
     /* Footer 4-col → 2-col */
-    footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"] { grid-template-columns: 1fr 1fr !important; gap: 30px !important; }
+    [data-footer-grid] { grid-template-columns: 1fr 1fr !important; gap: 30px !important; }
     footer p { max-width: 100% !important; }
     footer > div { padding-left: 22px !important; padding-right: 22px !important; }
 
@@ -368,8 +368,8 @@
     .flux-testi-col.up-slow { display: none !important; }
 
     footer { padding: 48px 0 24px !important; }
-    footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"] { grid-template-columns: 1fr !important; gap: 36px !important; }
-    footer > div > div[style*="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between"] { flex-direction: column !important; align-items: flex-start !important; gap: 18px !important; margin-top: 40px !important; padding-top: 24px !important; }
+    [data-footer-grid] { grid-template-columns: 1fr !important; gap: 36px !important; }
+    [data-footer-bottom] { flex-direction: column !important; align-items: flex-start !important; gap: 18px !important; margin-top: 40px !important; padding-top: 24px !important; }
     footer img[alt="FLUX NUTRITION by FIVA"] { height: 38px !important; }
     footer p { font-size: 13px !important; line-height: 1.6 !important; margin-top: 16px !important; }
     footer a { font-size: 13.5px !important; }
@@ -1603,7 +1603,7 @@
   <sc-if value="{{ !isAdmin }}" hint-placeholder-val="{{ true }}">
   <footer style="background:#1F2937;color:#F8FAFC;padding:clamp(60px,7vw,96px) 0 32px;font-family:'Montserrat',ui-sans-serif,sans-serif">
     <div style="max-width:1280px;margin:0 auto;padding:0 clamp(22px,4vw,44px)">
-      <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,4vw,56px);align-items:start">
+      <div data-footer-grid="1" style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,4vw,56px);align-items:start">
         <div>
           <img src="assets/flux-logo.png" alt="FLUX NUTRITION by FIVA" style="height:48px;width:auto;display:block;filter:brightness(0) invert(1)" />
           <p style="font-family:'Montserrat';font-size:13.5px;line-height:1.7;color:rgba(248,250,252,.6);margin:20px 0 0;max-width:32ch">Ciencia, nutrición y bienestar para acompañar tu mejor versión. Asunción, Paraguay.</p>
@@ -1627,7 +1627,7 @@
 
       </div>
 
-      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-top:clamp(44px,6vw,72px);padding-top:26px;border-top:1px solid rgba(248,250,252,.12)">
+      <div data-footer-bottom="1" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-top:clamp(44px,6vw,72px);padding-top:26px;border-top:1px solid rgba(248,250,252,.12)">
         <div style="font-family:'Montserrat';font-size:12px;color:rgba(248,250,252,.42);display:flex;flex-wrap:wrap;gap:6px;align-items:center">
           <span>© 2026 FLUX NUTRITION by FIVA · Todos los derechos reservados.</span>
           <span aria-hidden="true">·</span>
@@ -1639,7 +1639,16 @@
         </a>
       </div>
 
-      <style>@media (max-width:900px){footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"]{grid-template-columns:1fr 1fr!important}}@media (max-width:600px){footer > div > div[style*="grid-template-columns:minmax(0,1.6fr)"]{grid-template-columns:1fr!important}}</style>
+      <style>
+        @media (max-width:900px){
+          [data-footer-grid]{grid-template-columns:1fr 1fr!important;gap:36px!important}
+        }
+        @media (max-width:600px){
+          [data-footer-grid]{grid-template-columns:1fr!important;gap:32px!important}
+          [data-footer-grid] > div:first-child p{max-width:none!important}
+          [data-footer-bottom]{flex-direction:column!important;align-items:flex-start!important;gap:18px!important;margin-top:36px!important}
+        }
+      </style>
     </div>
   </footer>
   </sc-if>
@@ -2468,7 +2477,7 @@ class Component extends DCLogic {
       adminSectionLabel:{ marcas:'Marcas', productos:'Productos', pedidos:'Pedidos', clientes:'Clientes', contenido:'Contenido' }[s.adminSection || 'marcas'],
 
       footerCols:[
-        { title:'Comprar', links:['Productos', 'Objetivos', 'Rutinas', 'Promociones'] },
+        { title:'Comprar', links:['Productos', 'Marcas', 'Objetivos', 'Rutinas'] },
         { title:'FLUX', links:['Nuestra historia', 'Ciencia & Bienestar', 'Blog'] },
         { title:'Redes', links:['Instagram', 'TikTok', 'Facebook', 'WhatsApp'] }
       ],
