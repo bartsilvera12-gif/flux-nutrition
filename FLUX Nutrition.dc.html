@@ -1505,39 +1505,26 @@
       <button onClick="{{ goCartPage }}" style="background:none;border:0;padding:0;font-size:12px;color:#6B7280;cursor:pointer">← Volver al carrito</button>
     </div>
     <h1 style="font-family:'Montserrat';font-weight:500;font-size:clamp(28px,4vw,46px);letter-spacing:-.03em;margin:0 0 8px">Checkout</h1>
-    <p style="font-size:13.5px;color:#6B7280;margin:0 0 30px">Dos pasos, sin vueltas. Tus datos se usan solo para la entrega.</p>
+    <p style="font-size:13.5px;color:#6B7280;margin:0 0 30px">Completá tus datos y coordinamos todo por WhatsApp.</p>
     <div style="display:grid;grid-template-columns:{{ cartCols }};gap:clamp(20px,3vw,40px);align-items:start">
-      <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
         <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:22px;padding:clamp(20px,3vw,30px)">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
             <span style="width:26px;height:26px;border-radius:99px;background:#C9A7FF;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">1</span>
             <span style="font-family:'Montserrat';font-size:17px;font-weight:600">Tus datos</span>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+          <div data-checkout-grid="1" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <sc-for list="{{ fields }}" as="f" hint-placeholder-count="8">
-              <label style="display:flex;flex-direction:column;gap:7px;grid-column:{{ f.span }}">
+              <label style="display:flex;flex-direction:column;gap:7px;grid-column:{{ f.span }};min-width:0">
                 <span style="font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;font-weight:600">{{ f.label }}</span>
-                <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.ph }}" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:12px;padding:14px 16px;font-size:14px;outline:none;color:#1F2937" style-focus="border-color:#C9A7FF;background:#fff" />
+                <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.ph }}" style="border:1px solid rgba(31,41,55,.12);background:#F8FAFC;border-radius:12px;padding:14px 16px;font-size:14px;outline:none;color:#1F2937;width:100%;box-sizing:border-box;font-family:'Montserrat',sans-serif" style-focus="border-color:#C9A7FF;background:#fff" />
               </label>
             </sc-for>
           </div>
-        </div>
-        <div style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:22px;padding:clamp(20px,3vw,30px)">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-            <span style="width:26px;height:26px;border-radius:99px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">2</span>
-            <span style="font-family:'Montserrat';font-size:17px;font-weight:600">Entrega y pago</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <sc-for list="{{ payOptions }}" as="o" hint-placeholder-count="3">
-              <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:13px;text-align:left;background:{{ o.bg }};border:1px solid {{ o.border }};border-radius:14px;padding:16px;cursor:pointer">
-                <span style="width:16px;height:16px;border-radius:99px;border:1px solid rgba(31,41,55,.3);display:flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:99px;background:{{ o.dot }}"></span></span>
-                <span><span style="display:block;font-size:14px;font-weight:600;color:#1F2937">{{ o.title }}</span><span style="display:block;font-size:12px;color:#6B7280;margin-top:2px">{{ o.sub }}</span></span>
-              </button>
-            </sc-for>
-          </div>
+          <p style="font-size:12px;color:#9AA3B2;line-height:1.55;margin:18px 0 0">Tus datos se usan solo para coordinar la entrega. Al enviar el pedido te contactamos por WhatsApp para confirmar la forma de pago (transferencia, tarjeta o efectivo) y coordinar la entrega.</p>
         </div>
       </div>
-      <aside style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:22px;padding:24px;position:sticky;top:100px;display:flex;flex-direction:column;gap:12px">
+      <aside data-checkout-aside="1" style="background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:22px;padding:24px;position:sticky;top:100px;display:flex;flex-direction:column;gap:12px">
         <div style="font-family:'Montserrat';font-size:17px;font-weight:600">Tu pedido</div>
         <div style="display:flex;flex-direction:column;gap:10px;max-height:260px;overflow-y:auto">
           <sc-for list="{{ cartItems }}" as="c" hint-placeholder-count="2">
@@ -1555,10 +1542,23 @@
         <div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280"><span>Subtotal</span><span style="color:#1F2937;font-weight:600">{{ subtotal }}</span></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;color:#6B7280"><span>Envío</span><span style="color:#1F2937;font-weight:600">{{ shipping }}</span></div>
         <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:#6B7280">Total</span><span style="font-family:'Montserrat';font-size:21px;font-weight:600">{{ total }}</span></div>
-        <button onClick="{{ placeOrder }}" style="background:#1F2937;color:#fff;border:0;border-radius:999px;padding:16px;font-size:13.5px;font-weight:600;cursor:pointer;margin-top:6px" style-hover="background:#111827">Confirmar pedido</button>
-        <p style="font-size:11px;color:#9AA3B2;line-height:1.55;margin:4px 0 0">Al confirmar, te contactamos por WhatsApp para coordinar el pago y la entrega.</p>
+        <button onClick="{{ placeOrder }}" style="display:inline-flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;border:0;border-radius:999px;padding:16px;font-size:13.5px;font-weight:600;cursor:pointer;margin-top:6px;font-family:'Montserrat',sans-serif" style-hover="background:#1EBE5B">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 0 1-11.8 7L4 20l1.1-3.9A8 8 0 1 1 20 12Z"></path></svg>
+          Enviar pedido por WhatsApp
+        </button>
+        <p style="font-size:11px;color:#9AA3B2;line-height:1.55;margin:4px 0 0">Se abre WhatsApp con tu pedido pre-armado. Confirmás desde ahí.</p>
       </aside>
     </div>
+    <style>
+      @media (max-width:640px){
+        [data-checkout-grid]{grid-template-columns:1fr!important}
+        [data-checkout-grid] label{grid-column:auto!important}
+      }
+      [data-checkout-aside]{min-width:0}
+      @media (max-width:900px){
+        [data-checkout-aside]{position:static!important;top:auto!important}
+      }
+    </style>
   </main>
   </sc-if>
 
@@ -2385,12 +2385,31 @@ class Component extends DCLogic {
       goCartPage:() => this.nav('cart'), goCheckout:() => this.nav(s.cart.length ? 'checkout' : 'cat'),
 
       fields:fieldDefs.map(([k, label, ph]) => ({ label, ph, value:s.form[k], span: k === 'dir' || k === 'ref' ? 'span 2' : 'auto', onChange:this.setField(k) })),
-      payOptions:[
-        { id:'transfer', title:'Transferencia bancaria', sub:'Te enviamos los datos por WhatsApp' },
-        { id:'card', title:'Tarjeta de crédito o débito', sub:'Link de pago seguro' },
-        { id:'cash', title:'Efectivo en la entrega', sub:'Solo Gran Asunción' }
-      ].map(o => ({ title:o.title, sub:o.sub, bg: s.pay === o.id ? '#FDF2F7' : '#F8FAFC', border: s.pay === o.id ? '#C9A7FF' : 'rgba(31,41,55,.1)', dot: s.pay === o.id ? '#1F2937' : 'transparent', pick:() => this.setState({ pay:o.id }) })),
-      placeOrder:() => { const id = 'FLX-' + Math.floor(1000 + Math.random() * 8999); this.setState({ orderId:id, cart:[] }); this.nav('done'); },
+      placeOrder:() => {
+        const id = 'FLX-' + Math.floor(1000 + Math.random() * 8999);
+        const f = s.form || {};
+        const lines = s.cart.map(c => {
+          const p = PRODUCTS.find(x => x.id === c.id); if (!p) return '';
+          return '• ' + p.name + ' x' + c.qty + ' — ' + this.fmt(this.priceOf(p) * c.qty);
+        }).filter(Boolean).join('\n');
+        const msg =
+          '*Nuevo pedido FLUX Nutrition* (' + id + ')\n\n' +
+          '*Cliente:*\n' +
+          (f.nombre || '') + ' ' + (f.apellido || '') + '\n' +
+          'Tel: ' + (f.tel || '-') + '\n' +
+          'Email: ' + (f.email || '-') + '\n' +
+          'Doc/RUC: ' + (f.doc || '-') + '\n\n' +
+          '*Entrega:*\n' +
+          (f.dir || '-') + '\n' +
+          (f.ciudad || '-') + (f.ref ? ' — ' + f.ref : '') + '\n\n' +
+          '*Pedido:*\n' + lines + '\n\n' +
+          'Subtotal: ' + this.fmt(subtotal) + '\n' +
+          'Envío: ' + (ship === 0 ? 'Sin costo' : this.fmt(ship)) + '\n' +
+          '*Total: ' + this.fmt(subtotal + ship) + '*';
+        const url = 'https://wa.me/595000000000?text=' + encodeURIComponent(msg);
+        window.open(url, '_blank');
+        this.setState({ orderId:id, cart:[] }); this.nav('done');
+      },
       orderId:s.orderId, orderName:s.form.nombre || 'gracias por tu compra',
 
       quick: s.quick ? this.decorate(PRODUCTS.find(p => p.id === s.quick)) : null,
