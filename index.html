@@ -1291,6 +1291,22 @@
                     </sc-for>
                   </div>
                 </sc-if>
+                <sc-if value="{{ f.isFile }}">
+                  <div style="display:flex;gap:14px;align-items:flex-start">
+                    <sc-if value="{{ f.hasImage }}">
+                      <img src="{{ f.value }}" alt="preview" style="width:90px;height:90px;object-fit:cover;background:#F8FAFC;border:1px solid rgba(31,41,55,.14);border-radius:8px" />
+                    </sc-if>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                      <label style="display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#F8FAFC;border:1px dashed rgba(31,41,55,.24);border-radius:8px;padding:14px;cursor:pointer;font-family:'Montserrat';font-size:12.5px;font-weight:600;color:#1F2937">
+                        <input type="file" accept="image/*" onChange="{{ f.onChange }}" style="display:none" />
+                        {{ f.uploadLabel }}
+                      </label>
+                      <sc-if value="{{ f.hasImage }}">
+                        <button type="button" onClick="{{ f.onClear }}" style="align-self:flex-start;background:none;border:0;font-family:'Montserrat';font-size:11.5px;color:#B83A6B;cursor:pointer;padding:0">Quitar imagen</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-if>
                 <sc-if value="{{ f.hint }}"><span style="font-family:'Montserrat';font-size:11px;color:#9AA3B2">{{ f.hint }}</span></sc-if>
               </label>
             </sc-for>
@@ -2017,6 +2033,7 @@ class Component extends DCLogic {
     adminBrands: null, adminEditId: null, adminSection:'marcas', adminDraft: null,
     adminData: null, adminEntity: null, adminSubDraft:{ product_id:'', quantity:1, sort_order:0 }, adminSubFaqCat:{ name:'', slug:'', sort_order:0 }, adminLoading:false,
     authUser:null, authChecked:false, authLoading:false, authError:'', loginEmail:'', loginPass:'',
+    adminUploading:false,
     filtersOpen:false, tIdx:0, news:'', newsOk:false, toast:'', pay:'transfer',
     form:{ nombre:'', apellido:'', tel:'', email:'', doc:'', dir:'', ciudad:'', ref:'' },
     orderId:''
@@ -2216,10 +2233,28 @@ class Component extends DCLogic {
     }
   }
   slugify(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0, 60); }
+  genSku() { return 'FLX-' + Date.now().toString(36).toUpperCase().slice(-6) + '-' + Math.floor(Math.random()*1000).toString().padStart(3,'0'); }
+  adminUploadImage(field) {
+    const self = this;
+    return async (e) => {
+      const file = e && e.target && e.target.files && e.target.files[0]; if (!file) return;
+      const sb = window.fluxSupabase; if (!sb) { self.flash('Supabase no cargó'); return; }
+      self.setState({ adminUploading: true });
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = 'products/' + Date.now() + '-' + Math.random().toString(36).slice(2,8) + '.' + ext;
+      const { error } = await sb.storage.from('product-images').upload(path, file, { cacheControl: '31536000', upsert: false, contentType: file.type });
+      if (error) { self.setState({ adminUploading:false }); self.flash('Error al subir: ' + error.message); return; }
+      const { data } = sb.storage.from('product-images').getPublicUrl(path);
+      const url = data && data.publicUrl;
+      self.setState(x => ({ adminUploading:false, adminDraft: Object.assign({}, x.adminDraft, { [field]: url }) }));
+    };
+  }
   adminNewRow() {
     const entity = this.state.adminSection;
     const templates = {
       marcas: { slug:'', name:'', country:'Argentina', tagline:'', color:'#C3D9AB', logo_url:'', active:true, sort_order:0 },
+      categorias: { slug:'', name:'', color:'#C9A7FF', description:'', tint_gradient:'', sort_order:0, active:true },
+      objetivos: { slug:'', name:'', color:'#C9A7FF', description:'', sort_order:0, active:true },
       productos: { slug:'', sku:'', name:'', brand_id:'', category_id:'', short_description:'', description:'', ingredients:'', how_to_use:'', presentation:'', price:0, promo_price:null, currency:'PYG', stock:0, stock_min:5, badge:'', featured:false, featured_order:null, active:true, sort_order:0, _image_url:'', _goal_ids:[] },
       ingredientes: { slug:'', name:'', kind:'', description:'', color:'#C9A7FF', image_url:'', active:true, sort_order:0 },
       rutinas: { slug:'', name:'', time_label:'Mañana', description:'', image_url:'', total_price:0, savings:0, sort_order:0, active:true },
@@ -2246,17 +2281,19 @@ class Component extends DCLogic {
   async saveAdminDraft() {
     const s = this.state; const d = s.adminDraft; const entity = s.adminEntity || s.adminSection;
     if (!d) return;
-    const map = { marcas:'brands', productos:'products', ingredientes:'ingredients', rutinas:'routines', testimonios:'testimonials', faqs:'faqs' };
+    const map = { marcas:'brands', categorias:'categories', objetivos:'goals', productos:'products', ingredientes:'ingredients', rutinas:'routines', testimonios:'testimonials', faqs:'faqs' };
     const table = map[entity]; if (!table) return;
     // Basic validation
-    if (entity === 'marcas' && !d.name) { this.flash('Nombre requerido'); return; }
+    if ((entity === 'marcas' || entity === 'categorias' || entity === 'objetivos') && !d.name) { this.flash('Nombre requerido'); return; }
     if (entity === 'productos' && (!d.name || !d.brand_id || !d.category_id)) { this.flash('Nombre, marca y categoría son requeridos'); return; }
     if (entity === 'ingredientes' && (!d.name || !d.description)) { this.flash('Nombre y descripción son requeridos'); return; }
     if (entity === 'rutinas' && (!d.name || !d.time_label)) { this.flash('Nombre y momento requeridos'); return; }
     if (entity === 'testimonios' && (!d.quote || !d.author_name)) { this.flash('Cita y autor requeridos'); return; }
     if (entity === 'faqs' && (!d.question || !d.answer)) { this.flash('Pregunta y respuesta requeridas'); return; }
     // Auto-slug where relevant
-    if ((entity === 'marcas' || entity === 'productos' || entity === 'ingredientes' || entity === 'rutinas') && !d.slug) d.slug = this.slugify(d.name);
+    if ((entity === 'marcas' || entity === 'productos' || entity === 'ingredientes' || entity === 'rutinas' || entity === 'categorias' || entity === 'objetivos') && !d.slug) d.slug = this.slugify(d.name);
+    // Auto-SKU para productos
+    if (entity === 'productos' && !d.sku) d.sku = this.genSku();
     // Copy without private fields
     const row = {}; Object.keys(d).forEach(k => { if (!k.startsWith('_')) row[k] = d[k]; });
     const imgUrl = d._image_url; const goalIds = d._goal_ids;
@@ -2714,6 +2751,8 @@ class Component extends DCLogic {
 
         const sections = [
           { id:'marcas',       name:'Marcas',       singular:'marca',       newLabel:'+ Nueva marca',       count:(AD.brands||[]).length },
+          { id:'categorias',   name:'Categorías',   singular:'categoría',   newLabel:'+ Nueva categoría',   count:(AD.categories||[]).length },
+          { id:'objetivos',    name:'Objetivos',    singular:'objetivo',    newLabel:'+ Nuevo objetivo',    count:(AD.goals||[]).length },
           { id:'productos',    name:'Productos',    singular:'producto',    newLabel:'+ Nuevo producto',    count:(AD.products||[]).length },
           { id:'ingredientes', name:'Ingredientes', singular:'ingrediente', newLabel:'+ Nuevo ingrediente', count:(AD.ingredients||[]).length },
           { id:'rutinas',      name:'Rutinas',      singular:'rutina',      newLabel:'+ Nueva rutina',      count:(AD.routines||[]).length },
@@ -2741,6 +2780,30 @@ class Component extends DCLogic {
             cellText(b.tagline || '', { weight:400 }),
             cellToggle(b.active ? 'Activa' : 'Pausada', b.active, () => self.adminToggle('brands', b.id, 'active', !b.active)),
             cellActions(b, 'brands')
+          ]}));
+        } else if (section === 'categorias') {
+          tableGridCols = '50px minmax(0,2fr) minmax(0,2fr) 90px 100px 200px';
+          tableColumns = [{label:''},{label:'Categoría'},{label:'Descripción'},{label:'Productos'},{label:'Estado'},{label:'Acciones',align:'right'}];
+          const prodCountByCat = {}; (AD.products||[]).forEach(p => { prodCountByCat[p.category_id] = (prodCountByCat[p.category_id]||0) + 1; });
+          tableRows = (AD.categories || []).map(c => ({ cells:[
+            cellSwatch(c.color),
+            cellText(c.name, { sub:'slug: ' + (c.slug || '') }),
+            cellText(c.description || '', { weight:400 }),
+            cellText(String(prodCountByCat[c.id] || 0)),
+            cellToggle(c.active ? 'Activa' : 'Pausada', c.active, () => self.adminToggle('categories', c.id, 'active', !c.active)),
+            cellActions(c, 'categories')
+          ]}));
+        } else if (section === 'objetivos') {
+          tableGridCols = '50px minmax(0,2fr) minmax(0,2fr) 90px 100px 200px';
+          tableColumns = [{label:''},{label:'Objetivo'},{label:'Descripción'},{label:'Productos'},{label:'Estado'},{label:'Acciones',align:'right'}];
+          const prodCountByGoal = {}; (AD.product_goals||[]).forEach(pg => { prodCountByGoal[pg.goal_id] = (prodCountByGoal[pg.goal_id]||0) + 1; });
+          tableRows = (AD.goals || []).map(g => ({ cells:[
+            cellSwatch(g.color),
+            cellText(g.name, { sub:'slug: ' + (g.slug || '') }),
+            cellText(g.description || '', { weight:400 }),
+            cellText(String(prodCountByGoal[g.id] || 0)),
+            cellToggle(g.active ? 'Activo' : 'Pausado', g.active, () => self.adminToggle('goals', g.id, 'active', !g.active)),
+            cellActions(g, 'goals')
           ]}));
         } else if (section === 'productos') {
           tableGridCols = '50px minmax(0,2fr) minmax(0,1.2fr) 90px 70px 90px 90px 200px';
@@ -2818,7 +2881,8 @@ class Component extends DCLogic {
           sel:  (key, label, opts) => ({ isSelect:true, label, value: d[key] == null ? '' : d[key], options: opts, onChange: self.adminSetField(key) }),
           color:(key, label) => ({ isColor:true, label, value: d[key] || '#C3D9AB', onChange: self.adminSetField(key) }),
           tog:  (key, label, onLabel, offLabel) => ({ isToggle:true, label, value: !!d[key], toggleLabel: d[key] ? ('● ' + onLabel) : ('○ ' + offLabel), onToggle: self.adminToggleField(key) }),
-          goals:(label) => ({ isGoals:true, label, options: (AD.goals||[]).map(g => ({ label:g.name, selected:((d._goal_ids)||[]).includes(g.id), toggle: self.adminToggleGoal(g.id) })) })
+          goals:(label) => ({ isGoals:true, label, options: (AD.goals||[]).map(g => ({ label:g.name, selected:((d._goal_ids)||[]).includes(g.id), toggle: self.adminToggleGoal(g.id) })) }),
+          file: (key, label) => ({ isFile:true, label, value: d[key] || '', hasImage: !!d[key], uploading: !!s.adminUploading, uploadLabel: s.adminUploading ? 'Subiendo…' : (d[key] ? 'Cambiar imagen' : 'Subir imagen'), onChange: self.adminUploadImage(key), onClear: () => self.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [key]: '' }) })) })
         };
 
         let drawerFields = [];
@@ -2832,10 +2896,22 @@ class Component extends DCLogic {
           F.num('sort_order', 'Orden', '0'),
           F.tog('active', 'Estado', 'Activa', 'Pausada')
         ];
+        else if (section === 'categorias') drawerFields = [
+          F.text('name', 'Nombre *', 'Ej: Vitaminas y minerales'),
+          F.area('description', 'Descripción'),
+          F.color('color', 'Color'),
+          F.num('sort_order', 'Orden', '0'),
+          F.tog('active', 'Estado', 'Activa', 'Pausada')
+        ];
+        else if (section === 'objetivos') drawerFields = [
+          F.text('name', 'Nombre *', 'Ej: Energía'),
+          F.area('description', 'Descripción'),
+          F.color('color', 'Color'),
+          F.num('sort_order', 'Orden', '0'),
+          F.tog('active', 'Estado', 'Activo', 'Pausado')
+        ];
         else if (section === 'productos') drawerFields = [
           F.text('name', 'Nombre *', 'Ej: Multivitamínico Diario'),
-          F.text('slug', 'Slug', 'multivitaminico-diario'),
-          F.text('sku', 'SKU'),
           F.sel('brand_id', 'Marca *', brandOpts),
           F.sel('category_id', 'Categoría *', catOpts),
           F.area('short_description', 'Descripción corta', '1 línea para las cards'),
@@ -2848,7 +2924,7 @@ class Component extends DCLogic {
           F.num('stock', 'Stock', '0'),
           F.num('stock_min', 'Stock mínimo', '5'),
           F.text('badge', 'Badge', 'Nuevo / Más vendido / Promo'),
-          Object.assign(F.text('_image_url', 'URL imagen principal'), { hint:'Se guarda en product_images como is_primary.' }),
+          F.file('_image_url', 'Imagen principal'),
           F.goals('Objetivos'),
           F.num('featured_order', 'Orden destacados'),
           F.num('sort_order', 'Orden', '0'),
