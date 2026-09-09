@@ -489,7 +489,7 @@
         <button onClick="{{ goFaq }}" style="text-align:left;background:none;border:0;border-bottom:1px solid rgba(31,41,55,.07);padding:15px 0;font-family:'Montserrat';font-size:19px;font-weight:500;cursor:pointer;color:#1F2937">FAQs</button>
       </nav>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:auto">
-        <button onClick="{{ openQuiz }}" style="background:#C9A7FF;border:0;border-radius:999px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;color:#1F2937">Encontrá tu FLUX</button>
+        <button onClick="{{ goMarcas }}" style="background:#C9A7FF;border:0;border-radius:999px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;color:#1F2937">Ver marcas</button>
         <button onClick="{{ openCart }}" style="background:#1F2937;color:#fff;border:0;border-radius:999px;padding:14px;font-size:14px;font-weight:600;cursor:pointer">Ver carrito ({{ cartCount }})</button>
       </div>
     </aside>
@@ -511,7 +511,7 @@
 
           <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:clamp(26px,3.4vw,36px);animation:fluxIn .9s ease .7s both">
             <button onClick="{{ goCat }}" style="background:#F8FAFC;color:#1F2937;border:0;border-radius:6px;padding:16px 30px;font-family:'Montserrat',sans-serif;font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:background .2s ease" style-hover="background:#C3D9AB">Comprar FLUX</button>
-            <button onClick="{{ openQuiz }}" style="background:transparent;color:#F8FAFC;border:1px solid rgba(248,250,252,.5);border-radius:6px;padding:16px 26px;font-family:'Montserrat',sans-serif;font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:background .2s ease,border-color .2s ease" style-hover="background:rgba(248,250,252,.08);border-color:#F8FAFC">Encontrá el tuyo</button>
+            <button onClick="{{ goMarcas }}" style="background:transparent;color:#F8FAFC;border:1px solid rgba(248,250,252,.5);border-radius:6px;padding:16px 26px;font-family:'Montserrat',sans-serif;font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:background .2s ease,border-color .2s ease" style-hover="background:rgba(248,250,252,.08);border-color:#F8FAFC">Ver marcas</button>
           </div>
 
           <div style="margin-top:clamp(28px,3.4vw,40px);font-family:'Montserrat',sans-serif;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(248,250,252,.62);font-weight:500;animation:fluxIn .9s ease .9s both">Energía · Equilibrio · Foco · Bienestar</div>
@@ -763,54 +763,35 @@
       <style>@media (max-width:900px){[data-brand-hero]{grid-template-columns:1fr!important;grid-template-rows:auto 320px}}</style>
     </section>
 
-    <section id="quiz" style="padding:clamp(60px,8vw,116px) 0">
-      <div style="max-width:1000px;margin:0 auto;padding:0 clamp(18px,4vw,44px)">
-        <div data-reveal="1" style="opacity:0;transform:translateY(26px);transition:opacity .9s,transform .9s;background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:clamp(22px,3vw,32px);padding:clamp(26px,4vw,52px);box-shadow:0 40px 80px -60px rgba(31,41,55,.5)">
-          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px">
-            <div>
-              <div style="display:inline-flex;align-items:center;gap:12px;font-family:'Montserrat';font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:14px"><span aria-hidden="true" style="display:inline-block;width:24px;height:1px;background:linear-gradient(90deg,#FF83A7,#C9A7FF)"></span>Recomendador</div>
-              <h2 style="font-family:'Montserrat';font-weight:500;font-size:clamp(26px,3.4vw,42px);letter-spacing:-.03em;margin:0">Encontrá tu FLUX.</h2>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <sc-for list="{{ quizDots }}" as="d" hint-placeholder-count="3">
-                <span style="width:26px;height:3px;border-radius:99px;background:{{ d.bg }}"></span>
-              </sc-for>
-            </div>
+    <section id="marcas" style="padding:clamp(60px,8vw,116px) 0;background:#F8FAFC">
+      <div style="max-width:1280px;margin:0 auto;padding:0 clamp(22px,4vw,44px)">
+        <div data-reveal="1" style="opacity:0;transform:translateY(20px);transition:opacity .8s,transform .8s;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:clamp(30px,4vw,48px)">
+          <div style="max-width:640px">
+            <div style="display:inline-flex;align-items:center;gap:12px;font-family:'Montserrat';font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:#6B7280;font-weight:600;margin-bottom:14px"><span aria-hidden="true" style="display:inline-block;width:24px;height:1px;background:linear-gradient(90deg,#FF83A7,#C9A7FF)"></span>Marcas</div>
+            <h2 style="font-family:'Montserrat';font-weight:500;font-size:clamp(28px,3.6vw,44px);letter-spacing:-.03em;margin:0;color:#1F2937">Curaduría <span style="font-weight:300;font-style:italic;color:#C3D9AB">multimarca</span></h2>
+            <p style="font-family:'Montserrat';font-size:14.5px;line-height:1.65;color:#6B7280;margin:14px 0 0;max-width:56ch">Traemos las marcas que confiamos —de Argentina, EE.UU. y nuestra propia línea desde Paraguay— para armar una tienda con criterio.</p>
           </div>
-          <sc-if value="{{ quizAsking }}">
-            <div style="margin-top:clamp(24px,3vw,40px)">
-              <div style="font-family:'Montserrat';font-size:clamp(19px,2.2vw,26px);font-weight:500;letter-spacing:-.02em">{{ quizQuestion }}</div>
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:24px">
-                <sc-for list="{{ quizOptions }}" as="o" hint-placeholder-count="4">
-                  <button onClick="{{ o.pick }}" style="text-align:left;background:#F8FAFC;border:1px solid rgba(31,41,55,.08);border-radius:16px;padding:18px;cursor:pointer;font-size:14px;font-weight:500;color:#1F2937;transition:all .3s" style-hover="background:#FDF2F7;border-color:#C9A7FF;transform:translateY(-2px)">{{ o.label }}</button>
-                </sc-for>
+          <button onClick="{{ goCat }}" style="background:transparent;color:#1F2937;border:1px solid rgba(31,41,55,.2);border-radius:999px;padding:13px 24px;font-family:'Montserrat';font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .25s" style-hover="background:#1F2937;color:#fff;border-color:#1F2937">Ver catálogo completo →</button>
+        </div>
+
+        <div data-brand-grid="1" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(12px,1.6vw,18px)">
+          <sc-for list="{{ brands }}" as="b" hint-placeholder-count="5">
+            <button onClick="{{ b.open }}" style="position:relative;text-align:left;background:#fff;border:1px solid rgba(31,41,55,.07);border-radius:20px;padding:26px 24px 22px;cursor:pointer;transition:all .35s cubic-bezier(.2,.7,.2,1);overflow:hidden;min-height:200px;display:flex;flex-direction:column;justify-content:space-between" style-hover="transform:translateY(-6px);border-color:{{ b.color }};box-shadow:0 30px 60px -40px rgba(31,41,55,.4)">
+              <span aria-hidden="true" style="position:absolute;top:0;left:0;right:0;height:4px;background:{{ b.color }}"></span>
+              <div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px">
+                  <span style="display:inline-flex;align-items:center;gap:8px;font-family:'Montserrat';font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#6B7280;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:{{ b.color }}"></span>{{ b.country }}</span>
+                  <span style="font-family:'Montserrat';font-size:11px;color:#9AA3B2;font-weight:500">{{ b.count }} productos</span>
+                </div>
+                <div style="font-family:'Montserrat';font-size:22px;font-weight:600;letter-spacing:-.02em;color:#1F2937;line-height:1.1">{{ b.name }}</div>
+                <p style="font-family:'Montserrat';font-size:13px;line-height:1.55;color:#6B7280;margin:10px 0 0;font-weight:400">{{ b.tagline }}</p>
               </div>
-            </div>
-          </sc-if>
-          <sc-if value="{{ quizDone }}">
-            <div style="margin-top:clamp(24px,3vw,40px)">
-              <div style="font-family:'Montserrat';font-size:clamp(18px,2vw,24px);font-weight:500">Tu recomendación</div>
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:20px">
-                <sc-for list="{{ quizResults }}" as="p" hint-placeholder-count="2">
-                  <div style="display:flex;gap:14px;align-items:center;background:#F8FAFC;border:1px solid rgba(31,41,55,.07);border-radius:18px;padding:14px">
-                    <span style="width:64px;height:64px;border-radius:14px;background:{{ p.tint }};overflow:hidden;flex:0 0 auto;display:block"><img src="{{ p.img }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:cover" /></span>
-                    <div style="min-width:0">
-                      <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#6B7280;font-weight:600">{{ p.line }}</div>
-                      <div style="font-family:'Montserrat';font-size:16px;font-weight:600;margin-top:3px">{{ p.name }}</div>
-                      <button onClick="{{ p.open }}" style="margin-top:6px;background:none;border:0;padding:0;font-size:12px;font-weight:600;color:#E07AAE;cursor:pointer">Ver producto →</button>
-                    </div>
-                  </div>
-                </sc-for>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:26px">
-                <button onClick="{{ addQuizResults }}" style="background:#1F2937;color:#fff;border:0;border-radius:999px;padding:15px 28px;font-size:13.5px;font-weight:600;cursor:pointer">Agregar recomendación</button>
-                <button onClick="{{ resetQuiz }}" style="background:none;border:1px solid rgba(31,41,55,.14);border-radius:999px;padding:15px 26px;font-size:13.5px;font-weight:600;cursor:pointer;color:#1F2937">Volver a empezar</button>
-              </div>
-            </div>
-          </sc-if>
-          <p style="margin:26px 0 0;font-size:11.5px;line-height:1.6;color:#9AA3B2;max-width:60ch">Esta herramienta es informativa y no reemplaza la recomendación de un profesional de la salud.</p>
+              <div style="display:inline-flex;align-items:center;gap:8px;font-family:'Montserrat';font-size:12px;font-weight:600;color:#1F2937;margin-top:20px;letter-spacing:.02em">Explorar marca <span aria-hidden="true">→</span></div>
+            </button>
+          </sc-for>
         </div>
       </div>
+      <style>@media (max-width:640px){[data-brand-grid]{grid-template-columns:1fr!important}}</style>
     </section>
 
     <section data-masked-section="1" class="flux-grain" style="position:relative;padding:clamp(120px,16vh,200px) 0;background:#0F1418;color:#F8FAFC;overflow:hidden">
@@ -2194,11 +2175,6 @@ class Component extends DCLogic {
       { k:'faq', title:'Preguntas frecuentes', body:'¿Se puede combinar con otras líneas FLUX? Sí, las fórmulas están pensadas para convivir en una misma rutina. Ante dudas, consultá con un profesional de la salud.' }
     ];
 
-    const quizStep = s.quizStep;
-    const q = QUIZ[Math.min(quizStep, QUIZ.length - 1)];
-    const firstGoal = (s.quizAns[0] && s.quizAns[0].goal) || 'bienestar';
-    const quizResults = PRODUCTS.filter(p => p.goals.includes(firstGoal)).slice(0, 2).map(p => this.decorate(p));
-
     const fieldDefs = [
       ['nombre', 'Nombre', 'María'], ['apellido', 'Apellido', 'González'],
       ['tel', 'Teléfono', '0981 000 000'], ['email', 'Email', 'maria@email.com'],
@@ -2239,7 +2215,7 @@ class Component extends DCLogic {
       goGoals:() => this.scrollTo('objetivos'), goScience:() => this.scrollTo('ciencia'), goAbout:() => this.nav('about'), goFaq:() => this.nav('faq'), goAdmin:() => this.nav('admin'), goPrivacy:() => this.nav('privacy'),
       faqs:[
         { q:'¿Cuánto tarda mi pedido?', a:'Los envíos dentro de Asunción llegan en 24 hs. A todo Paraguay entre 48 y 72 hs. Recibís seguimiento por WhatsApp.' },
-        { q:'¿Cómo elijo mi suplemento?', a:'Podés usar el recomendador "Encontrá tu FLUX" en el hero, o filtrar el catálogo por objetivo (energía, foco, equilibrio, glow, digestión, salud femenina).' },
+        { q:'¿Cómo elijo mi suplemento?', a:'Filtrá el catálogo por marca u objetivo (energía, foco, equilibrio, glow, digestión, salud femenina), o escribinos por WhatsApp si querés que te asesoremos.' },
         { q:'¿Se pueden combinar varios FLUX?', a:'Sí. Las rutinas Mañana / Día / Noche están pensadas para combinarse. Si tenés dudas, escribinos por WhatsApp y te armamos una combinación personalizada.' },
         { q:'¿Los suplementos reemplazan una comida?', a:'No. Los suplementos acompañan tu alimentación y estilo de vida. No sustituyen consultas profesionales ni una dieta variada.' },
         { q:'¿Tienen ingredientes de origen animal?', a:'Depende de la fórmula. La mayoría de nuestras cápsulas son vegetales (aptas para veganos), pero algunas contienen colágeno bovino u omega de pescado. Cada ficha lo aclara.' },
@@ -2353,13 +2329,7 @@ class Component extends DCLogic {
       essentialPrice:this.fmt(this.priceOf(PRODUCTS[0])),
       addEssential:() => this.add('essential', 1), openEssential:() => this.openProduct('essential'),
 
-      quizAsking:s.quizStep < QUIZ.length, quizDone:s.quizStep >= QUIZ.length,
-      quizQuestion:q.q,
-      quizOptions:q.opts.map(o => ({ label:o.label, pick:() => this.setState(x => ({ quizAns:x.quizAns.concat(o), quizStep:x.quizStep + 1 })) })),
-      quizDots:QUIZ.map((_, i) => ({ bg: i < s.quizStep ? '#C9A7FF' : 'rgba(31,41,55,.14)' })),
-      quizResults, resetQuiz:() => this.setState({ quizStep:0, quizAns:[] }),
-      addQuizResults:() => { quizResults.forEach(p => this.add(p.id, 1)); },
-      openQuiz:() => this.scrollTo('quiz'),
+      goMarcas:() => this.scrollTo('marcas'),
 
       combos:[
         { time:'Mañana', name:'Rutina Energía', desc:'Para arrancar el día con base y foco.', img:'assets/life/wellness-breakfast.jpg', items:[{ name:'Essential', color:'#FF83A7', price:this.fmt(159000) }, { name:'Mental Balance', color:'#AFC8FF', price:this.fmt(189000) }], total:this.fmt(313000), save:this.fmt(35000), add:() => { this.add('essential', 1); this.add('mental', 1); } },
