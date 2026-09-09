@@ -2258,7 +2258,7 @@ class Component extends DCLogic {
       productos: { slug:'', sku:'', name:'', brand_id:'', category_id:'', short_description:'', description:'', ingredients:'', how_to_use:'', presentation:'', price:0, promo_price:null, currency:'PYG', stock:0, stock_min:5, badge:'', featured:false, featured_order:null, active:true, sort_order:0, _image_url:'', _goal_ids:[] },
       ingredientes: { slug:'', name:'', kind:'', description:'', color:'#C9A7FF', image_url:'', active:true, sort_order:0 },
       rutinas: { slug:'', name:'', time_label:'Mañana', description:'', image_url:'', total_price:0, savings:0, sort_order:0, active:true },
-      testimonios: { quote:'', author_name:'', author_meta:'', product_id:'', avatar_url:'', rating:5, approved:false, featured:false, sort_order:0 },
+      testimonios: { quote:'', author_name:'—', author_meta:null, product_id:null, avatar_url:null, rating:null, approved:false, featured:false, sort_order:0 },
       faqs: { category_id:'', question:'', answer:'', sort_order:0, active:true }
     };
     const t = templates[entity]; if (!t) return;
@@ -2302,7 +2302,8 @@ class Component extends DCLogic {
     if (entity === 'productos' && (!d.name || !d.brand_id || !d.category_id)) { this.flash('Nombre, marca y categoría son requeridos'); return; }
     if (entity === 'ingredientes' && (!d.name || !d.description)) { this.flash('Nombre y descripción son requeridos'); return; }
     if (entity === 'rutinas' && (!d.name || !d.time_label)) { this.flash('Nombre y momento requeridos'); return; }
-    if (entity === 'testimonios' && (!d.quote || !d.author_name)) { this.flash('Cita y autor requeridos'); return; }
+    if (entity === 'testimonios' && !d.quote) { this.flash('La cita es requerida'); return; }
+    if (entity === 'testimonios' && !d.author_name) d.author_name = '—';
     if (entity === 'faqs' && (!d.question || !d.answer)) { this.flash('Pregunta y respuesta requeridas'); return; }
     // Auto-slug where relevant
     if ((entity === 'marcas' || entity === 'productos' || entity === 'ingredientes' || entity === 'rutinas' || entity === 'categorias' || entity === 'objetivos') && !d.slug) d.slug = this.slugify(d.name);
@@ -2858,14 +2859,11 @@ class Component extends DCLogic {
             cellActions(r, 'routines')
           ]}));
         } else if (section === 'testimonios') {
-          tableGridCols = 'minmax(0,2fr) minmax(0,1.2fr) 70px 90px 90px 200px';
-          tableColumns = [{label:'Cita'},{label:'Autor'},{label:'Rating'},{label:'Aprobado'},{label:'Destacado'},{label:'Acciones',align:'right'}];
+          tableGridCols = 'minmax(0,3fr) 110px 200px';
+          tableColumns = [{label:'Cita'},{label:'Aprobado'},{label:'Acciones',align:'right'}];
           tableRows = (AD.testimonials || []).map(t => ({ cells:[
-            cellText((t.quote || '').slice(0, 90) + ((t.quote||'').length > 90 ? '…' : ''), { weight:500 }),
-            cellText(t.author_name || '—', { sub: t.author_meta || '' }),
-            cellText('★ ' + (t.rating || 0)),
-            cellToggle(t.approved ? 'Sí' : 'No', t.approved, () => self.adminToggle('testimonials', t.id, 'approved', !t.approved)),
-            cellToggle(t.featured ? '★' : '—', t.featured, () => self.adminToggle('testimonials', t.id, 'featured', !t.featured)),
+            cellText(t.quote || '', { weight:500 }),
+            cellToggle(t.approved ? 'Aprobado' : 'Pendiente', t.approved, () => self.adminToggle('testimonials', t.id, 'approved', !t.approved)),
             cellActions(t, 'testimonials')
           ]}));
         } else if (section === 'faqs') {
@@ -2968,15 +2966,9 @@ class Component extends DCLogic {
           F.tog('active', 'Activa', 'Activa', 'Pausada')
         ];
         else if (section === 'testimonios') drawerFields = [
-          F.area('quote', 'Cita *'),
-          F.text('author_name', 'Autor *', 'Camila R.'),
-          F.text('author_meta', 'Meta', 'Essential · 4 meses de uso'),
-          F.sel('product_id', 'Producto relacionado', [{ value:'', label:'— Ninguno —' }].concat((AD.products||[]).map(p => ({ value:p.id, label:p.name })))),
-          F.file('avatar_url', 'Avatar'),
-          F.num('rating', 'Rating (1-5)'),
-          F.num('sort_order', 'Orden'),
-          F.tog('approved', 'Aprobado', 'Aprobado', 'Pendiente'),
-          F.tog('featured', 'Destacado', 'Destacado', 'No destacado')
+          F.area('quote', 'Cita *', 'La cita que va en la home.'),
+          F.num('sort_order', 'Orden', '0'),
+          F.tog('approved', 'Aprobado', 'Aprobado', 'Pendiente')
         ];
         else if (section === 'faqs') drawerFields = [
           F.sel('category_id', 'Categoría', faqCatOpts),
