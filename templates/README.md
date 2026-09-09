@@ -49,13 +49,29 @@ Instancia Supabase (proyecto)
 
 Cada tabla del tenant cae en uno de estos 3 grupos. Completar los arrays en el template (`ARRAY['...','...']`) según corresponda.
 
-| Grupo | Anon | Auth normal | Admin | Ejemplo |
-|---|---|---|---|---|
-| **PUBLIC_TABLES** | SELECT filtrado (`active IS TRUE`, hijos gateados por padre) | igual que anon | CRUD completo | `brands`, `categories`, `products`, `ingredients`, `testimonials` |
-| **ADMIN_CRUD_TABLES** | nada | nada | CRUD completo | `orders`, `customers`, `payments`, `settings` |
-| **ADMIN_READONLY_TABLES** | nada | nada | solo SELECT (escrituras vía backend/service_role) | `admin_users`, `audit_log` |
+| Grupo | Anon | Auth normal | Admin | service_role | Ejemplo |
+|---|---|---|---|---|---|
+| **PUBLIC_TABLES** | SELECT filtrado (`active IS TRUE`, hijos gateados) | igual que anon | CRUD | CRUD | `brands`, `categories`, `products` |
+| **ADMIN_CRUD_TABLES** | nada | nada | CRUD | CRUD | `orders`, `customers`, `payments`, `settings` |
+| **ADMIN_READONLY_TABLES** | nada | nada | solo SELECT | CRUD (writes vía backend) | `admin_users`, `audit_log` |
 
-El template ya trae fijo el grupo READONLY (`admin_users` + `audit_log`) porque son el estándar Neura. Los otros dos grupos se completan por tenant.
+`service_role` bypassa RLS pero **igual necesita `GRANT USAGE` en el schema y `GRANT` explícito en las tablas** — está incluido en los tres grupos.
+
+READONLY viene con `admin_users` + `audit_log` por default; se pueden sumar más (`security_events`, `integration_logs`, etc.) en el array de la sección 9c.
+
+## Storage
+
+⚠️ Los buckets NO se crean desde el SQL. Es una **precondición manual**:
+
+- Supabase Dashboard → Storage → New bucket, o
+- Storage API, o
+- `supabase/config.toml` en el proyecto
+
+El bucket debe existir y estar marcado **Public** antes de correr el pack. El pack solo aplica policies sobre `storage.objects`.
+
+## ⚠️ Re-ejecución
+
+El tenant pack borra **todas** las policies del schema y las recrea desde la plantilla. Cualquier policy manual que no esté volcada al pack se pierde. Antes de re-correr, volcar cualquier excepción al pack.
 
 ## Modelo de seguridad
 

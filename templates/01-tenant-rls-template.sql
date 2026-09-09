@@ -10,27 +10,30 @@
 -- Grupos de tablas del tenant (completar los arrays al pie):
 --
 --   PUBLIC_TABLES        → anon SELECT filtrado + admin CRUD
---                          Ej: brands, categories, products
+--   ADMIN_CRUD_TABLES    → solo admin CRUD
+--   ADMIN_READONLY_TABLES → solo admin SELECT (escrituras vía backend/service_role)
 --
---   ADMIN_CRUD_TABLES    → solo admin CRUD (nada al anon)
---                          Ej: orders, customers, payments, settings
+-- Precondición Storage:
+--   El bucket {{BUCKET}} debe existir y estar marcado como Public.
+--   Crearlo por Supabase Dashboard / Storage API / supabase/config.toml
+--   ANTES de correr este pack (Supabase recomienda no manipular
+--   storage.buckets directamente vía SQL).
 --
---   ADMIN_READONLY_TABLES → solo admin SELECT (nada al anon;
---                          escrituras vía backend/service_role)
---                          Ej: admin_users, audit_log
---
--- Requisitos:
---   - Correr 00-neura-security-bootstrap.sql antes.
---   - {{TENANT}}.admin_users con columna user_id UUID REFERENCES auth.users(id)
---     (la sección 1 la crea/vincula si falta).
+-- ⚠️  RE-EJECUTAR este pack ELIMINA todas las policies del tenant y las
+--     recrea desde esta plantilla. Cualquier policy especial creada
+--     manualmente y no representada acá se pierde. Antes de re-correr,
+--     asegurarse de que toda excepción esté volcada al pack.
 --
 -- Deny-by-default · Idempotente · Multi-tenant safe
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
--- 0. USAGE + default privileges del schema del tenant
+-- 0. USAGE del schema + default privileges del schema del tenant
+--    service_role incluido: bypassa RLS pero necesita USAGE + grants
+--    de tabla para operar (Supabase requiere GRANT explícito en custom
+--    schemas para service_role).
 -- ---------------------------------------------------------------------
-GRANT USAGE ON SCHEMA {{TENANT}} TO anon, authenticated;
+GRANT USAGE ON SCHEMA {{TENANT}} TO anon, authenticated, service_role;
 
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA {{TENANT}}
   REVOKE ALL      ON TABLES    FROM PUBLIC, anon, authenticated;
@@ -110,35 +113,49 @@ BEGIN
 END $$;
 
 -- ---------------------------------------------------------------------
--- 5. GRANT/REVOKE sobre tablas existentes
+-- 5. REVOKE inicial · deny-by-default en tablas y sequences existentes
 -- ---------------------------------------------------------------------
-REVOKE ALL ON ALL TABLES IN SCHEMA {{TENANT}} FROM anon, authenticated;
+REVOKE ALL ON ALL TABLES    IN SCHEMA {{TENANT}} FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA {{TENANT}} FROM PUBLIC, anon, authenticated;
 
--- ⚠️  COMPLETAR con las tablas reales del tenant en los 3 grupos:
+-- ⚠️  SEQUENCES: si alguna tabla usa SERIAL/BIGSERIAL/nextval, habilitar
+--     puntualmente su sequence. Si todo usa gen_random_uuid(), no hace falta.
+--   GRANT USAGE ON SEQUENCE {{TENANT}}.<tabla>_id_seq TO authenticated;
 
--- Grupo A · PUBLIC_TABLES → SELECT anon + DML authenticated (RLS filtra al admin)
+-- ---------------------------------------------------------------------
+-- 6. GRANTs por grupo · COMPLETAR con tablas reales del tenant
+-- ---------------------------------------------------------------------
+
+-- Grupo A · PUBLIC_TABLES → SELECT anon+authenticated + DML authenticated (RLS filtra)
 -- GRANT SELECT ON
---   {{TENANT}}.brands, {{TENANT}}.categories, {{TENANT}}.products,
---   ...
+--   {{TENANT}}.brands, {{TENANT}}.categories, {{TENANT}}.products
 -- TO anon, authenticated;
 -- GRANT INSERT, UPDATE, DELETE ON
---   {{TENANT}}.brands, {{TENANT}}.categories, {{TENANT}}.products,
---   ...
+--   {{TENANT}}.brands, {{TENANT}}.categories, {{TENANT}}.products
 -- TO authenticated;
-
--- Grupo B · ADMIN_CRUD_TABLES → SELECT+DML solo authenticated (RLS filtra al admin)
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON
---   {{TENANT}}.orders, {{TENANT}}.customers, {{TENANT}}.payments,
---   ...
--- TO authenticated;
+--   {{TENANT}}.brands, {{TENANT}}.categories, {{TENANT}}.products
+-- TO service_role;
 
--- Grupo C · ADMIN_READONLY_TABLES → SELECT solo authenticated (RLS filtra al admin)
+-- Grupo B · ADMIN_CRUD_TABLES → SELECT+DML authenticated (RLS filtra al admin)
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON
+--   {{TENANT}}.orders, {{TENANT}}.customers, {{TENANT}}.payments
+-- TO authenticated;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON
+--   {{TENANT}}.orders, {{TENANT}}.customers, {{TENANT}}.payments
+-- TO service_role;
+
+-- Grupo C · ADMIN_READONLY_TABLES → SELECT authenticated (RLS filtra); DML solo service_role
 GRANT SELECT ON
   {{TENANT}}.admin_users, {{TENANT}}.audit_log
 TO authenticated;
 
+GRANT SELECT, INSERT, UPDATE, DELETE ON
+  {{TENANT}}.admin_users, {{TENANT}}.audit_log
+TO service_role;
+
 -- ---------------------------------------------------------------------
--- 6. Cerrar TODAS las funciones/RPC del tenant · habilitar puntualmente
+-- 7. Cerrar TODAS las funciones/RPC del tenant · habilitar puntualmente
 -- ---------------------------------------------------------------------
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA {{TENANT}} FROM PUBLIC, anon, authenticated;
 
@@ -147,7 +164,7 @@ REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA {{TENANT}} FROM PUBLIC, anon, authenti
 --   GRANT EXECUTE ON FUNCTION {{TENANT}}.rpc_admin(...)   TO authenticated;
 
 -- ---------------------------------------------------------------------
--- 7. Public READ policies (SOLO para PUBLIC_TABLES)
+-- 8. Public READ policies (SOLO para PUBLIC_TABLES)
 -- ---------------------------------------------------------------------
 -- Patrón A · tabla con columna `active`:
 --   CREATE POLICY "public read active <tabla>"
@@ -171,12 +188,12 @@ REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA {{TENANT}} FROM PUBLIC, anon, authenti
 --     );
 
 -- ---------------------------------------------------------------------
--- 8a. Admin CRUD · PUBLIC_TABLES (4 policies por tabla)
+-- 9a. Admin CRUD · PUBLIC_TABLES
 -- ---------------------------------------------------------------------
 DO $$
 DECLARE
   t TEXT;
-  tables TEXT[] := ARRAY[/* PUBLIC_TABLES ej: 'brands','categories','products' */];
+  tables TEXT[] := ARRAY[/* PUBLIC_TABLES — ej: 'brands','categories','products' */];
 BEGIN
   FOREACH t IN ARRAY tables LOOP
     EXECUTE format($f$
@@ -195,12 +212,12 @@ BEGIN
 END $$;
 
 -- ---------------------------------------------------------------------
--- 8b. Admin CRUD · ADMIN_CRUD_TABLES (4 policies por tabla, sin lectura pública)
+-- 9b. Admin CRUD · ADMIN_CRUD_TABLES
 -- ---------------------------------------------------------------------
 DO $$
 DECLARE
   t TEXT;
-  tables TEXT[] := ARRAY[/* ADMIN_CRUD_TABLES ej: 'orders','customers','payments','settings' */];
+  tables TEXT[] := ARRAY[/* ADMIN_CRUD_TABLES — ej: 'orders','customers','payments','settings' */];
 BEGIN
   FOREACH t IN ARRAY tables LOOP
     EXECUTE format($f$
@@ -219,30 +236,35 @@ BEGIN
 END $$;
 
 -- ---------------------------------------------------------------------
--- 9. Admin SELECT-only · ADMIN_READONLY_TABLES
---    (admin_users, audit_log — escrituras vía backend/service_role)
+-- 9c. Admin SELECT-only · ADMIN_READONLY_TABLES
+--     Escrituras vía backend/service_role (bypassa RLS).
 -- ---------------------------------------------------------------------
-CREATE POLICY "admin select admin_users"
-  ON {{TENANT}}.admin_users FOR SELECT TO authenticated
-  USING ((SELECT private.{{TENANT_ADMIN}}()));
-
-CREATE POLICY "admin select audit"
-  ON {{TENANT}}.audit_log FOR SELECT TO authenticated
-  USING ((SELECT private.{{TENANT_ADMIN}}()));
+DO $$
+DECLARE
+  t TEXT;
+  tables TEXT[] := ARRAY['admin_users','audit_log'
+                        /* agregar más si aparecen: 'security_events','integration_logs',... */];
+BEGIN
+  FOREACH t IN ARRAY tables LOOP
+    EXECUTE format($f$
+      CREATE POLICY "admin select %1$s" ON {{TENANT}}.%1$I
+        FOR SELECT TO authenticated USING ((SELECT private.{{TENANT_ADMIN}}()));
+    $f$, t);
+  END LOOP;
+END $$;
 
 -- ---------------------------------------------------------------------
--- 10. Storage — bucket {{BUCKET}} (tenant-prefixed, forzado a Public)
+-- 10. Storage — policies sobre bucket {{BUCKET}}
+--     PRECONDICIÓN: el bucket debe existir y ser Public (crear vía
+--     Dashboard / Storage API / supabase/config.toml).
 -- ---------------------------------------------------------------------
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('{{BUCKET}}', '{{BUCKET}}', TRUE)
-ON CONFLICT (id) DO UPDATE SET public = TRUE;
-
 DROP POLICY IF EXISTS "anon read {{BUCKET}}"    ON storage.objects;
 DROP POLICY IF EXISTS "admin list {{BUCKET}}"   ON storage.objects;
 DROP POLICY IF EXISTS "admin upload {{BUCKET}}" ON storage.objects;
 DROP POLICY IF EXISTS "admin update {{BUCKET}}" ON storage.objects;
 DROP POLICY IF EXISTS "admin delete {{BUCKET}}" ON storage.objects;
 
+-- LIST solo para admin (downloads públicos van por URL directa, bypassa RLS)
 CREATE POLICY "admin list {{BUCKET}}"
   ON storage.objects FOR SELECT TO authenticated
   USING (bucket_id = '{{BUCKET}}' AND (SELECT private.{{TENANT_ADMIN}}()));
@@ -284,25 +306,30 @@ SELECT
   has_table_privilege('authenticated', '{{TENANT}}.audit_log',   'UPDATE') AS can_update_audit,
   has_table_privilege('authenticated', '{{TENANT}}.audit_log',   'DELETE') AS can_delete_audit;
 
--- 4) Funciones ejecutables por anon (esperado: 0)
+-- 4) service_role SÍ puede administrar admin_users / audit_log (esperado: t)
+SELECT
+  has_table_privilege('service_role', '{{TENANT}}.admin_users', 'INSERT') AS sr_admin_users,
+  has_table_privilege('service_role', '{{TENANT}}.audit_log',   'INSERT') AS sr_audit_log;
+
+-- 5) Funciones ejecutables por anon (esperado: 0)
 SELECT n.nspname, p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
  WHERE n.nspname = '{{TENANT}}' AND has_function_privilege('anon', p.oid, 'EXECUTE');
 
--- 5) Bucket público (esperado: t)
+-- 6) Bucket público (esperado: t) — precondición manual
 SELECT id, public FROM storage.buckets WHERE id = '{{BUCKET}}';
 
--- 6) Policies por tabla (esperado: ≥1 cada una)
+-- 7) Policies por tabla (esperado: ≥1 cada una)
 SELECT tablename, count(*) AS policies FROM pg_policies
  WHERE schemaname = '{{TENANT}}' GROUP BY tablename ORDER BY tablename;
 
--- 7a) VIEWS normales — cada una debe tener security_invoker=true
+-- 8a) VIEWS normales — cada una debe tener security_invoker=true
 SELECT n.nspname AS schema, c.relname AS view,
        (SELECT option_value FROM pg_options_to_table(c.reloptions)
          WHERE option_name = 'security_invoker') AS security_invoker
   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
  WHERE n.nspname = '{{TENANT}}' AND c.relkind = 'v';
 
--- 7b) MATERIALIZED VIEWS — no soportan security_invoker; controlar con GRANTs
+-- 8b) MATERIALIZED VIEWS — controlar con GRANTs (no soportan security_invoker)
 SELECT n.nspname AS schema, c.relname AS materialized_view
   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
  WHERE n.nspname = '{{TENANT}}' AND c.relkind = 'm';
