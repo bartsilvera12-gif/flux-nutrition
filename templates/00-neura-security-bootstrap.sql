@@ -1,8 +1,13 @@
 -- =====================================================================
 -- NEURA · 00 · SECURITY BOOTSTRAP  (global · una sola vez por instancia)
 -- =====================================================================
--- Corré esto UNA sola vez en cada proyecto Supabase, antes de aplicar
--- cualquier tenant pack. Es idempotente.
+-- Ejecutar UNA sola vez al inicializar la instancia Supabase,
+-- ANTES de aplicar cualquier tenant pack.
+--
+-- ⚠️  NO re-ejecutar después de instalar tenants: el `REVOKE EXECUTE ON
+--     ALL FUNCTIONS IN SCHEMA private` de la sección 1 stripearía el
+--     EXECUTE de todas las funciones is_<tenant>_admin() ya instaladas
+--     y los paneles admin dejarían de autorizar hasta re-correr sus packs.
 --
 -- No pertenece a ningún tenant. NO tocar desde una migración de tenant.
 -- =====================================================================

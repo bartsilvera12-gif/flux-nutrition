@@ -5,7 +5,7 @@
 --
 --   {{TENANT}}         → slug del tenant (ej. `flux`)                → nombre del schema
 --   {{TENANT_ADMIN}}   → ej. `is_flux_admin`                         → función en `private`
---   {{BUCKET}}         → ej. `product-images`                        → bucket público de assets
+--   {{BUCKET}}         → GLOBALMENTE ÚNICO, ej. `flux-product-images` → bucket público del tenant
 --   {{PUBLIC_TABLES}}  → lista de tablas públicas (SELECT anon)      → completar al pie
 --   {{ADMIN_TABLES}}   → lista de tablas admin-only (SELECT admin)   → completar al pie
 --
@@ -258,13 +258,20 @@ SELECT tablename, count(*) AS policies
   FROM pg_policies WHERE schemaname = '{{TENANT}}'
  GROUP BY tablename ORDER BY tablename;
 
--- 8) VIEWS en el schema expuesto — cada una debe tener security_invoker=true
---    o quedar fuera del schema expuesto. Revisar manualmente:
+-- 8a) VIEWS normales — cada una debe tener security_invoker=true
+--     (así respetan las policies RLS de las tablas subyacentes)
 SELECT n.nspname AS schema, c.relname AS view,
        (SELECT option_value FROM pg_options_to_table(c.reloptions)
          WHERE option_name = 'security_invoker') AS security_invoker
   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
- WHERE n.nspname = '{{TENANT}}' AND c.relkind IN ('v','m');
---    Para arreglar una view sensible:
---      ALTER VIEW {{TENANT}}.<view> SET (security_invoker = true);
+ WHERE n.nspname = '{{TENANT}}' AND c.relkind = 'v';
+-- Fix para una view sensible:
+--   ALTER VIEW {{TENANT}}.<view> SET (security_invoker = true);
+
+-- 8b) MATERIALIZED VIEWS — PostgreSQL no soporta security_invoker acá.
+--     Revisar manualmente: no exponerlas al anon/authenticated si
+--     contienen data sensible; controlar acceso con GRANTs explícitos.
+SELECT n.nspname AS schema, c.relname AS materialized_view
+  FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+ WHERE n.nspname = '{{TENANT}}' AND c.relkind = 'm';
 -- =====================================================================

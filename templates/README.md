@@ -12,21 +12,23 @@ Plantillas oficiales para configurar Row Level Security en proyectos Supabase de
 ```
 Instancia Supabase (proyecto)
 │
-├── 1. Correr 00-neura-security-bootstrap.sql   (una sola vez)
+├── 1. Correr 00-neura-security-bootstrap.sql   ⚠️ UNA SOLA VEZ
 │      ├── crea schema `private`
 │      ├── revoke defaults en `private`
 │      └── cierra funciones existentes en `private`
+│      NO re-correr después de instalar tenants: stripearía
+│      el EXECUTE de is_<tenant>_admin() ya instaladas.
 │
 ├── 2. Dashboard → Data API → Exposed schemas:
 │      ├── agregar el schema del tenant (ej. `flux`)
 │      └── NO agregar `private`
 │
-└── 3. Correr 01-tenant-rls-template.sql (una vez por tenant)
+└── 3. Correr 01-tenant-rls-template.sql (una vez por tenant, re-runnable)
        │
        ├── previamente: find-replace de placeholders
        │      {{TENANT}}       → flux
        │      {{TENANT_ADMIN}} → is_flux_admin
-       │      {{BUCKET}}       → product-images
+       │      {{BUCKET}}       → flux-product-images   (tenant-prefixed!)
        │
        ├── completar la lista `tables` en la sección 8
        │   con las tablas públicas del tenant
@@ -41,7 +43,7 @@ Instancia Supabase (proyecto)
 |---|---|---|
 | `{{TENANT}}` | `flux` | Nombre del schema del tenant |
 | `{{TENANT_ADMIN}}` | `is_flux_admin` | Nombre de la función admin en `private` |
-| `{{BUCKET}}` | `product-images` | Bucket público del tenant |
+| `{{BUCKET}}` | `flux-product-images` | Bucket público del tenant — **debe ser globalmente único** (namespace: `<tenant>-<uso>`). `storage.objects` es una tabla compartida por toda la instancia. |
 
 ## Modelo de seguridad
 
@@ -78,7 +80,8 @@ El pack tenant termina con 8 SECURITY CHECKS. Los outputs esperados están docum
 - Bucket `public = t`
 - 0 tablas del tenant sin RLS
 - 0 funciones ejecutables por anon
-- Cada view del schema con `security_invoker = true`
+- Cada view normal (relkind='v') del schema con `security_invoker = true`
+- Materialized views (relkind='m') listadas para revisión manual — no soportan `security_invoker`, controlar acceso con GRANTs
 
 ## Operaciones sensibles (fuera del panel)
 

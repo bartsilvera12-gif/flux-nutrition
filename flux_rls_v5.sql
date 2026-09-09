@@ -399,12 +399,16 @@ SELECT tablename, count(*) AS policies
  GROUP BY tablename
  ORDER BY tablename;
 
--- 8) VIEWS en flux — cada una debería tener security_invoker=true
---    (o quedar fuera del schema expuesto). Fix:
---      ALTER VIEW flux.<view> SET (security_invoker = true);
+-- 8a) VIEWS normales — cada una debería tener security_invoker=true
+--     Fix: ALTER VIEW flux.<view> SET (security_invoker = true);
 SELECT n.nspname AS schema, c.relname AS view,
        (SELECT option_value FROM pg_options_to_table(c.reloptions)
          WHERE option_name = 'security_invoker') AS security_invoker
   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
- WHERE n.nspname = 'flux' AND c.relkind IN ('v','m');
+ WHERE n.nspname = 'flux' AND c.relkind = 'v';
+
+-- 8b) MATERIALIZED VIEWS — no soportan security_invoker; revisar manualmente
+SELECT n.nspname AS schema, c.relname AS materialized_view
+  FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+ WHERE n.nspname = 'flux' AND c.relkind = 'm';
 -- =====================================================================
