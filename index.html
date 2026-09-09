@@ -1924,7 +1924,7 @@ const QUIZ = [
 
 class Component extends DCLogic {
   state = {
-    screen:'home', pid:'essential', hp:0, intro:0, titlePx:0, cart:[], cartOpen:false, mobileOpen:false, mega:false,
+    screen: (typeof window !== 'undefined' && /^\/admin(\/|$)/.test(window.location.pathname)) ? 'admin' : 'home', pid:'essential', hp:0, intro:0, titlePx:0, cart:[], cartOpen:false, mobileOpen:false, mega:false,
     searchOpen:false, searchQ:'', w:1280, scrolled:false, hoverGoal:null, hoverCard:null,
     favs:[], quizStep:0, quizAns:[], quick:null, qty:1, gallery:0, openBlock:'descripcion',
     catQ:'', goal:'todos', catFilter:'todas', brandFilter:'todas', sort:'destacados', maxPrice:350000, onlyPromo:false, onlyStock:false,
@@ -2067,7 +2067,15 @@ class Component extends DCLogic {
 
   fmt(n) { return 'Gs. ' + Math.round(n).toLocaleString('es-PY').replace(/,/g, '.'); }
   priceOf(p) { return p.promo ? p.promo : p.price; }
-  nav(screen) { this.setState({ screen, mobileOpen:false, mega:false, cartOpen:false, searchOpen:false, filtersOpen:false }); requestAnimationFrame(() => window.scrollTo({ top:0, left:0, behavior:'instant' })); }
+  nav(screen) {
+    this.setState({ screen, mobileOpen:false, mega:false, cartOpen:false, searchOpen:false, filtersOpen:false });
+    try {
+      const p = window.location.pathname;
+      if (screen === 'admin' && !/^\/admin(\/|$)/.test(p)) window.history.pushState({}, '', '/admin');
+      else if (screen !== 'admin' && /^\/admin(\/|$)/.test(p)) window.history.pushState({}, '', '/');
+    } catch(e) {}
+    requestAnimationFrame(() => window.scrollTo({ top:0, left:0, behavior:'instant' }));
+  }
   scrollTo(id) {
     this.setState({ mobileOpen:false, mega:false });
     const go = () => { const el = document.getElementById(id); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior:'smooth' }); };
