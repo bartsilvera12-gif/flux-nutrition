@@ -407,7 +407,7 @@
 
   /* Ocultar decoración horizontal-scroll agresiva */
   @media (max-width: 900px) {
-    html, body { overflow-x: hidden; }
+    body { overflow-x: hidden; }
   }
 </style>
 </helmet>
@@ -2074,7 +2074,7 @@ class Component extends DCLogic {
 
   fmt(n) { return 'Gs. ' + Math.round(n).toLocaleString('es-PY').replace(/,/g, '.'); }
   priceOf(p) { return p.promo ? p.promo : p.price; }
-  nav(screen) { this.setState({ screen, mobileOpen:false, mega:false, cartOpen:false, searchOpen:false, filtersOpen:false }); window.scrollTo(0, 0); }
+  nav(screen) { this.setState({ screen, mobileOpen:false, mega:false, cartOpen:false, searchOpen:false, filtersOpen:false }); requestAnimationFrame(() => window.scrollTo({ top:0, left:0, behavior:'instant' })); }
   scrollTo(id) {
     this.setState({ mobileOpen:false, mega:false });
     const go = () => { const el = document.getElementById(id); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior:'smooth' }); };
@@ -2094,7 +2094,7 @@ class Component extends DCLogic {
   }
   setQty(id, d) { this.setState(s => ({ cart: s.cart.map(c => c.id === id ? { id, qty: Math.max(1, c.qty + d) } : c) })); }
   remove(id) { this.setState(s => ({ cart: s.cart.filter(c => c.id !== id) })); }
-  openProduct(id) { this.setState({ pid:id, qty:1, gallery:0, quick:null, screen:'pdp', mega:false, searchOpen:false, cartOpen:false }); window.scrollTo(0, 0); }
+  openProduct(id) { this.setState({ pid:id, qty:1, gallery:0, quick:null, screen:'pdp', mega:false, searchOpen:false, cartOpen:false }); requestAnimationFrame(() => window.scrollTo({ top:0, left:0, behavior:'instant' })); }
   setField(k) { return e => { const v = e.target.value; this.setState(s => ({ form: Object.assign({}, s.form, { [k]:v }) })); }; }
 
   decorate(p) {
