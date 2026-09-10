@@ -1189,6 +1189,21 @@
         <button type="button" onClick="{{ adminNewRow }}" style="background:#1F2937;color:#F8FAFC;border:0;border-radius:6px;padding:12px 22px;font-family:'Montserrat';font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s" style-hover="background:#C3D9AB;color:#1F2937">{{ adminNewLabel }}</button>
       </div>
 
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;align-items:center">
+        <div style="position:relative;flex:1;min-width:220px;max-width:420px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA3B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input value="{{ adminSearchQuery }}" onChange="{{ onAdminSearch }}" placeholder="{{ adminSearchPlaceholder }}" style="width:100%;padding:11px 14px 11px 40px;border:1px solid rgba(31,41,55,.14);border-radius:8px;font-family:'Montserrat';font-size:13px;color:#1F2937;outline:none;background:#fff;box-sizing:border-box" style-focus="border-color:#C9A7FF" />
+        </div>
+        <sc-if value="{{ adminShowBrandFilter }}">
+          <select value="{{ adminBrandFilterValue }}" onChange="{{ onAdminBrandFilter }}" style="padding:11px 34px 11px 14px;border:1px solid rgba(31,41,55,.14);border-radius:8px;font-family:'Montserrat';font-size:13px;color:#1F2937;outline:none;background:#fff;cursor:pointer">
+            <sc-for list="{{ adminBrandFilterOptions }}" as="o">
+              <option value="{{ o.value }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+        </sc-if>
+        <div style="font-family:'Montserrat';font-size:12px;color:#9AA3B2">{{ adminResultsLabel }}</div>
+      </div>
+
       <sc-if value="{{ adminLoading }}">
         <div style="background:#fff;border:1px dashed rgba(31,41,55,.14);padding:30px;border-radius:8px;text-align:center;font-family:'Montserrat';font-size:13px;color:#6B7280">Cargando datos…</div>
       </sc-if>
@@ -2058,6 +2073,7 @@ class Component extends DCLogic {
     authUser:null, authChecked:false, authLoading:false, authError:'', loginEmail:'', loginPass:'',
     adminUploading:false,
     confirmModal:null,
+    adminSearch:'', adminBrandFilter:'',
     filtersOpen:false, tIdx:0, news:'', newsOk:false, toast:'', pay:'transfer',
     form:{ nombre:'', apellido:'', tel:'', email:'', doc:'', dir:'', ciudad:'', ref:'' },
     orderId:''
@@ -2853,11 +2869,21 @@ class Component extends DCLogic {
         const cellActions = (row, table) => ({ isActions:true, onEdit:() => self.adminEditRow(row), onDelete:() => self.adminDelete(table, row.id), align:'right' });
         const fmtGs = (n) => n == null ? '—' : ('Gs. ' + Number(n).toLocaleString('es-PY').replace(/,/g,'.'));
 
+        // --- Search + filter helpers ---
+        const q = (s.adminSearch || '').trim().toLowerCase();
+        const matchSearch = (row, fields) => {
+          if (!q) return true;
+          return fields.some(f => (row[f] == null ? '' : String(row[f])).toLowerCase().includes(q));
+        };
+        let totalCount = 0, shownCount = 0;
+
         let tableColumns = [], tableRows = [], tableGridCols = '';
         if (section === 'marcas') {
           tableGridCols = '50px minmax(0,2fr) 110px minmax(0,2fr) 100px 200px';
           tableColumns = [{label:''},{label:'Marca'},{label:'País'},{label:'Tagline'},{label:'Estado'},{label:'Acciones',align:'right'}];
-          tableRows = (AD.brands || []).map(b => ({ cells:[
+          const _brands = (AD.brands || []); totalCount = _brands.length;
+          const _fBrands = _brands.filter(b => matchSearch(b, ['name','country','tagline','slug'])); shownCount = _fBrands.length;
+          tableRows = _fBrands.map(b => ({ cells:[
             cellSwatch(b.color),
             cellText(b.name, { sub:'slug: ' + (b.slug || '') }),
             cellText(b.country || '—', { weight:400 }),
@@ -2869,7 +2895,9 @@ class Component extends DCLogic {
           tableGridCols = '50px minmax(0,2fr) minmax(0,2fr) 90px 100px 200px';
           tableColumns = [{label:''},{label:'Categoría'},{label:'Descripción'},{label:'Productos'},{label:'Estado'},{label:'Acciones',align:'right'}];
           const prodCountByCat = {}; (AD.products||[]).forEach(p => { prodCountByCat[p.category_id] = (prodCountByCat[p.category_id]||0) + 1; });
-          tableRows = (AD.categories || []).map(c => ({ cells:[
+          const _cats = (AD.categories || []); totalCount = _cats.length;
+          const _fCats = _cats.filter(c => matchSearch(c, ['name','description','slug'])); shownCount = _fCats.length;
+          tableRows = _fCats.map(c => ({ cells:[
             cellSwatch(c.color),
             cellText(c.name, { sub:'slug: ' + (c.slug || '') }),
             cellText(c.description || '', { weight:400 }),
@@ -2881,7 +2909,9 @@ class Component extends DCLogic {
           tableGridCols = '50px minmax(0,2fr) minmax(0,2fr) 90px 100px 200px';
           tableColumns = [{label:''},{label:'Objetivo'},{label:'Descripción'},{label:'Productos'},{label:'Estado'},{label:'Acciones',align:'right'}];
           const prodCountByGoal = {}; (AD.product_goals||[]).forEach(pg => { prodCountByGoal[pg.goal_id] = (prodCountByGoal[pg.goal_id]||0) + 1; });
-          tableRows = (AD.goals || []).map(g => ({ cells:[
+          const _goals = (AD.goals || []); totalCount = _goals.length;
+          const _fGoals = _goals.filter(g => matchSearch(g, ['name','description','slug'])); shownCount = _fGoals.length;
+          tableRows = _fGoals.map(g => ({ cells:[
             cellSwatch(g.color),
             cellText(g.name, { sub:'slug: ' + (g.slug || '') }),
             cellText(g.description || '', { weight:400 }),
@@ -2892,7 +2922,18 @@ class Component extends DCLogic {
         } else if (section === 'productos') {
           tableGridCols = '50px minmax(0,2fr) minmax(0,1.2fr) 90px 70px 90px 90px 200px';
           tableColumns = [{label:''},{label:'Producto'},{label:'Marca / Cat.'},{label:'Precio'},{label:'Stock'},{label:'Destacado'},{label:'Activo'},{label:'Acciones',align:'right'}];
-          tableRows = (AD.products || []).map(p => {
+          const _prods = (AD.products || []); totalCount = _prods.length;
+          const brandFilter = s.adminBrandFilter || '';
+          const _fProds = _prods.filter(p => {
+            if (brandFilter && p.brand_id !== brandFilter) return false;
+            if (!q) return true;
+            const bname = (brandById[p.brand_id] && brandById[p.brand_id].name) || '';
+            const cname = (catById[p.category_id] && catById[p.category_id].name) || '';
+            return matchSearch(p, ['name','slug','sku','short_description','badge']) ||
+                   (bname + ' ' + cname).toLowerCase().includes(q);
+          });
+          shownCount = _fProds.length;
+          tableRows = _fProds.map(p => {
             const img = (AD.productImageByProduct || {})[p.id];
             return { cells:[
               img ? { isText:true, value:'', weight:400, align:'left' } : cellSwatch((brandById[p.brand_id] && brandById[p.brand_id].color) || '#F8FAFC'),
@@ -2908,7 +2949,9 @@ class Component extends DCLogic {
         } else if (section === 'ingredientes') {
           tableGridCols = '50px minmax(0,2fr) 130px minmax(0,2fr) 100px 200px';
           tableColumns = [{label:''},{label:'Ingrediente'},{label:'Tipo'},{label:'Descripción'},{label:'Estado'},{label:'Acciones',align:'right'}];
-          tableRows = (AD.ingredients || []).map(ing => ({ cells:[
+          const _ing = (AD.ingredients || []); totalCount = _ing.length;
+          const _fIng = _ing.filter(i => matchSearch(i, ['name','kind','description','slug'])); shownCount = _fIng.length;
+          tableRows = _fIng.map(ing => ({ cells:[
             cellSwatch(ing.color || '#F8FAFC'),
             cellText(ing.name, { sub:'slug: ' + (ing.slug || '') }),
             cellText(ing.kind || '—', { weight:400 }),
@@ -2919,7 +2962,9 @@ class Component extends DCLogic {
         } else if (section === 'rutinas') {
           tableGridCols = 'minmax(0,2fr) 130px minmax(0,2fr) 110px 100px 200px';
           tableColumns = [{label:'Rutina'},{label:'Momento'},{label:'Descripción'},{label:'Precio combo'},{label:'Estado'},{label:'Acciones',align:'right'}];
-          tableRows = (AD.routines || []).map(r => ({ cells:[
+          const _rout = (AD.routines || []); totalCount = _rout.length;
+          const _fRout = _rout.filter(r => matchSearch(r, ['name','time_label','description','slug'])); shownCount = _fRout.length;
+          tableRows = _fRout.map(r => ({ cells:[
             cellText(r.name, { sub:'slug: ' + (r.slug || '') + ' · ' + ((routineItemsByRoutine[r.id]||[]).length) + ' items' }),
             cellText(r.time_label || '—', { weight:400 }),
             cellText(r.description || '', { weight:400 }),
@@ -2930,7 +2975,9 @@ class Component extends DCLogic {
         } else if (section === 'testimonios') {
           tableGridCols = 'minmax(0,3fr) 110px 200px';
           tableColumns = [{label:'Cita'},{label:'Aprobado'},{label:'Acciones',align:'right'}];
-          tableRows = (AD.testimonials || []).map(t => ({ cells:[
+          const _testi = (AD.testimonials || []); totalCount = _testi.length;
+          const _fTesti = _testi.filter(t => matchSearch(t, ['quote','author_name','author_meta'])); shownCount = _fTesti.length;
+          tableRows = _fTesti.map(t => ({ cells:[
             cellText(t.quote || '', { weight:500 }),
             cellToggle(t.approved ? 'Aprobado' : 'Pendiente', t.approved, () => self.adminToggle('testimonials', t.id, 'approved', !t.approved)),
             cellActions(t, 'testimonials')
@@ -2938,7 +2985,9 @@ class Component extends DCLogic {
         } else if (section === 'faqs') {
           tableGridCols = 'minmax(0,1fr) minmax(0,2fr) minmax(0,2fr) 100px 200px';
           tableColumns = [{label:'Categoría'},{label:'Pregunta'},{label:'Respuesta'},{label:'Estado'},{label:'Acciones',align:'right'}];
-          tableRows = (AD.faqs || []).map(f => ({ cells:[
+          const _faqs = (AD.faqs || []); totalCount = _faqs.length;
+          const _fFaqs = _faqs.filter(f => matchSearch(f, ['question','answer'])); shownCount = _fFaqs.length;
+          tableRows = _fFaqs.map(f => ({ cells:[
             cellText((faqCatById[f.category_id] && faqCatById[f.category_id].name) || '—', { weight:500 }),
             cellText(f.question || '', { weight:600 }),
             cellText((f.answer || '').slice(0, 80) + ((f.answer||'').length > 80 ? '…' : ''), { weight:400 }),
@@ -2969,7 +3018,6 @@ class Component extends DCLogic {
         let drawerFields = [];
         if (section === 'marcas') drawerFields = [
           F.text('name', 'Nombre *', 'Ej: Now Foods'),
-          Object.assign(F.text('slug', 'Slug', 'nowfoods'), { hint:'Sin espacios ni símbolos. Se auto-genera si lo dejás vacío.' }),
           F.text('country', 'País', 'Argentina'),
           F.text('tagline', 'Tagline'),
           F.color('color', 'Color de acento'),
@@ -3014,7 +3062,6 @@ class Component extends DCLogic {
         ];
         else if (section === 'ingredientes') drawerFields = [
           F.text('name', 'Nombre *', 'Vitaminas del complejo B'),
-          F.text('slug', 'Slug', 'complejo-b'),
           F.text('kind', 'Tipo (apellido)', 'Complejo B · Nootrópico · Aminoácido'),
           F.area('description', 'Descripción *', 'Metabolismo energético y sistema nervioso.'),
           F.color('color', 'Color de swatch'),
@@ -3025,7 +3072,6 @@ class Component extends DCLogic {
         ];
         else if (section === 'rutinas') drawerFields = [
           F.text('name', 'Nombre *', 'Rutina Energía'),
-          F.text('slug', 'Slug', 'rutina-energia'),
           F.sel('time_label', 'Momento *', timeOpts),
           F.area('description', 'Descripción'),
           F.file('image_url', 'Imagen lifestyle'),
@@ -3061,7 +3107,7 @@ class Component extends DCLogic {
 
         return {
           adminSection: section,
-          adminSections: sections.map(sec => ({ id:sec.id, name:sec.name, count:sec.count, activeClass: section === sec.id ? 'is-active' : '', pick:() => self.setState({ adminSection: sec.id, adminDraft:null, adminEditId:null, adminEntity:null }) })),
+          adminSections: sections.map(sec => ({ id:sec.id, name:sec.name, count:sec.count, activeClass: section === sec.id ? 'is-active' : '', pick:() => self.setState({ adminSection: sec.id, adminDraft:null, adminEditId:null, adminEntity:null, adminSearch:'', adminBrandFilter:'' }) })),
           adminSectionLabel: currentSection.name,
           adminEntitySingular: currentSection.singular,
           adminNewLabel: currentSection.newLabel,
@@ -3072,6 +3118,14 @@ class Component extends DCLogic {
           adminTableEmpty: tableRows.length === 0 && !s.adminLoading,
           adminDrawerFields: drawerFields,
           adminEditing: !!s.adminDraft,
+          adminSearchQuery: s.adminSearch || '',
+          adminSearchPlaceholder: 'Buscar en ' + (currentSection.name || '') + '…',
+          onAdminSearch: e => self.setState({ adminSearch: e.target.value }),
+          adminShowBrandFilter: section === 'productos',
+          adminBrandFilterValue: s.adminBrandFilter || '',
+          adminBrandFilterOptions: [{ value:'', label:'Todas las marcas' }].concat((AD.brands||[]).map(b => ({ value:b.id, label:b.name }))),
+          onAdminBrandFilter: e => self.setState({ adminBrandFilter: e.target.value }),
+          adminResultsLabel: (q || (section === 'productos' && s.adminBrandFilter)) ? (shownCount + ' de ' + totalCount) : (totalCount + ' registros'),
           adminIsNew: s.adminEditId === '__new__',
           adminSaveLabel: s.adminEditId === '__new__' ? 'Crear' : 'Guardar cambios',
           adminModeLabel: s.adminEditId === '__new__' ? 'Nuevo' : 'Editar',
