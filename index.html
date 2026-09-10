@@ -1805,6 +1805,24 @@
   <sc-if value="{{ toast }}">
     <div style="position:fixed;z-index:99;left:50%;transform:translateX(-50%);bottom:28px;background:#1F2937;color:#fff;border-radius:999px;padding:13px 24px;font-size:13px;font-weight:500;box-shadow:0 24px 50px -28px rgba(31,41,55,.8);animation:fluxIn .3s both">{{ toast }}</div>
   </sc-if>
+
+  <sc-if value="{{ confirmOpen }}">
+    <div onClick="{{ onCancelConfirm }}" style="position:fixed;inset:0;z-index:150;background:rgba(31,41,55,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fluxIn .2s ease both;font-family:'Montserrat',sans-serif">
+      <div style="background:#fff;border-radius:20px;padding:28px 28px 22px;max-width:400px;width:100%;box-shadow:0 30px 60px -20px rgba(31,41,55,.55);animation:fluxIn .25s ease both">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+          <span style="width:42px;height:42px;border-radius:12px;background:{{ confirmIconBg }};color:{{ confirmIconColor }};display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path></svg>
+          </span>
+          <div style="font-family:'Montserrat';font-size:17px;font-weight:600;color:#1F2937;letter-spacing:-.015em">{{ confirmTitle }}</div>
+        </div>
+        <p style="font-family:'Montserrat';font-size:13.5px;line-height:1.6;color:#6B7280;margin:0 0 22px">{{ confirmMessage }}</p>
+        <div style="display:flex;gap:10px">
+          <button type="button" onClick="{{ onCancelConfirm }}" style="flex:1;background:transparent;color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:8px;padding:12px;font-family:'Montserrat';font-size:13px;font-weight:600;cursor:pointer" style-hover="border-color:#1F2937">{{ confirmCancelLabel }}</button>
+          <button type="button" onClick="{{ onConfirm }}" style="flex:1;background:{{ confirmBg }};color:#fff;border:0;border-radius:8px;padding:12px;font-family:'Montserrat';font-size:13px;font-weight:600;letter-spacing:.02em;cursor:pointer" style-hover="opacity:.9">{{ confirmConfirmLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;freeShipping&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:350000,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:150000,&quot;max&quot;:800000,&quot;step&quot;:50000,&quot;unit&quot;:&quot;Gs.&quot;,&quot;section&quot;:&quot;Comercial&quot;}}">
@@ -2039,6 +2057,7 @@ class Component extends DCLogic {
     adminData: null, adminEntity: null, adminSubDraft:{ product_id:'', quantity:1, sort_order:0 }, adminSubFaqCat:{ name:'', slug:'', sort_order:0 }, adminLoading:false,
     authUser:null, authChecked:false, authLoading:false, authError:'', loginEmail:'', loginPass:'',
     adminUploading:false,
+    confirmModal:null,
     filtersOpen:false, tIdx:0, news:'', newsOk:false, toast:'', pay:'transfer',
     form:{ nombre:'', apellido:'', tel:'', email:'', doc:'', dir:'', ciudad:'', ref:'' },
     orderId:''
@@ -2207,9 +2226,27 @@ class Component extends DCLogic {
     await this.loadAdminData();
     return data;
   }
+  askConfirm(opts) {
+    return new Promise(resolve => {
+      this.setState({ confirmModal: {
+        title: opts.title || '¿Estás segura?',
+        message: opts.message || '',
+        confirmLabel: opts.confirmLabel || 'Eliminar',
+        cancelLabel: opts.cancelLabel || 'Cancelar',
+        danger: opts.danger !== false,
+        resolve
+      }});
+    });
+  }
+  resolveConfirm(ok) {
+    const m = this.state.confirmModal; if (!m) return;
+    this.setState({ confirmModal: null });
+    if (m.resolve) m.resolve(!!ok);
+  }
   async adminDelete(table, id) {
     const sb = window.fluxSupabase; if (!sb) return;
-    if (!window.confirm('¿Eliminar este registro?')) return;
+    const ok = await this.askConfirm({ title:'Eliminar registro', message:'Esta acción no se puede deshacer.', confirmLabel:'Eliminar' });
+    if (!ok) return;
     const { error } = await sb.from(table).delete().eq('id', id);
     if (error) { this.flash('Error: ' + error.message); return; }
     this.flash('Eliminado');
@@ -2352,7 +2389,8 @@ class Component extends DCLogic {
   }
   async deleteFaqCategory(id) {
     const sb = window.fluxSupabase;
-    if (!window.confirm('¿Eliminar categoría?')) return;
+    const ok = await this.askConfirm({ title:'Eliminar categoría', message:'Se eliminará esta categoría de FAQs.', confirmLabel:'Eliminar' });
+    if (!ok) return;
     const { error } = await sb.from('faq_categories').delete().eq('id', id);
     if (error) { this.flash('Error: ' + error.message); return; }
     await this.loadAdminData();
@@ -2757,6 +2795,17 @@ class Component extends DCLogic {
       quick: s.quick ? this.decorate(PRODUCTS.find(p => p.id === s.quick)) : null,
       closeQuick:() => this.setState({ quick:null }),
       toast:s.toast,
+      confirmOpen: !!s.confirmModal,
+      confirmTitle: s.confirmModal ? s.confirmModal.title : '',
+      confirmMessage: s.confirmModal ? s.confirmModal.message : '',
+      confirmConfirmLabel: s.confirmModal ? s.confirmModal.confirmLabel : 'Aceptar',
+      confirmCancelLabel: s.confirmModal ? s.confirmModal.cancelLabel : 'Cancelar',
+      confirmDanger: !!(s.confirmModal && s.confirmModal.danger),
+      confirmBg: s.confirmModal && s.confirmModal.danger ? '#B83A6B' : '#1F2937',
+      confirmIconBg: s.confirmModal && s.confirmModal.danger ? '#FDECEC' : '#EEF2FF',
+      confirmIconColor: s.confirmModal && s.confirmModal.danger ? '#B83A6B' : '#1F2937',
+      onConfirm: () => this.resolveConfirm(true),
+      onCancelConfirm: () => this.resolveConfirm(false),
 
       ...(function(){
         const self = this;
