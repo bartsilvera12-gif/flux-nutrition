@@ -1320,9 +1320,9 @@
                   <button type="button" onClick="{{ f.onToggle }}" style="align-self:flex-start;background:{{ f.value ? '#C3D9AB' : '#F8FAFC' }};color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:999px;padding:8px 18px;font-family:'Montserrat';font-size:12px;font-weight:600;cursor:pointer">{{ f.toggleLabel }}</button>
                 </sc-if>
                 <sc-if value="{{ f.isGoals }}">
-                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
                     <sc-for list="{{ f.options }}" as="g">
-                      <button type="button" onClick="{{ g.toggle }}" style="background:{{ g.selected ? '#C9A7FF' : '#F8FAFC' }};color:#1F2937;border:1px solid rgba(31,41,55,.14);border-radius:999px;padding:6px 12px;font-family:'Montserrat';font-size:11.5px;font-weight:600;cursor:pointer">{{ g.label }}</button>
+                      <button type="button" onClick="{{ g.toggle }}" style="background:{{ g.bg }};color:{{ g.color }};border:1.5px solid {{ g.border }};border-radius:999px;padding:8px 14px;font-family:'Montserrat';font-size:12px;font-weight:{{ g.weight }};cursor:pointer;transition:all .2s ease" style-hover="border-color:#C9A7FF">{{ g.label }}</button>
                     </sc-for>
                   </div>
                 </sc-if>
@@ -3292,7 +3292,10 @@ class Component extends DCLogic {
           },
           color:(key, label) => ({ isColor:true, label, value: d[key] || '#C3D9AB', onChange: self.adminSetField(key) }),
           tog:  (key, label, onLabel, offLabel) => ({ isToggle:true, label, value: !!d[key], toggleLabel: d[key] ? ('● ' + onLabel) : ('○ ' + offLabel), onToggle: self.adminToggleField(key) }),
-          goals:(label) => ({ isGoals:true, label, options: (AD.goals||[]).map(g => ({ label:g.name, selected:((d._goal_ids)||[]).includes(g.id), toggle: self.adminToggleGoal(g.id) })) }),
+          goals:(label) => ({ isGoals:true, label, options: (AD.goals||[]).map(g => {
+            const sel = ((d._goal_ids)||[]).includes(g.id);
+            return { label:g.name, selected:sel, bg: sel ? '#C9A7FF' : '#F8FAFC', border: sel ? '#C9A7FF' : 'rgba(31,41,55,.14)', color: sel ? '#1F2937' : '#6B7280', weight: sel ? '700' : '500', toggle: self.adminToggleGoal(g.id) };
+          }) }),
           file: (key, label) => ({ isFile:true, label, value: d[key] || '', hasImage: !!d[key], uploading: !!s.adminUploading, uploadLabel: s.adminUploading ? 'Subiendo…' : (d[key] ? 'Cambiar imagen' : 'Subir imagen'), onChange: self.adminUploadImage(key), onClear: () => self.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [key]: '' }) })) })
         };
 
