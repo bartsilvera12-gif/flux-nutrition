@@ -1258,11 +1258,34 @@
                   <textarea value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" rows="3" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none;resize:vertical;min-height:70px"></textarea>
                 </sc-if>
                 <sc-if value="{{ f.isSelect }}">
-                  <select value="{{ f.value }}" onChange="{{ f.onChange }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none;background:#fff">
-                    <sc-for list="{{ f.options }}" as="o">
-                      <option value="{{ o.value }}">{{ o.label }}</option>
-                    </sc-for>
-                  </select>
+                  <div style="position:relative">
+                    <button type="button" onClick="{{ f.openSelect }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;background:#fff;cursor:pointer;text-align:left" style-hover="border-color:#C9A7FF">
+                      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ f.currentLabel }}</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <sc-if value="{{ f.isOpen }}">
+                      <div onClick="{{ f.closeSelect }}" style="position:fixed;inset:0;z-index:130;background:transparent"></div>
+                      <div style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:131;background:#fff;border-radius:12px;box-shadow:0 24px 50px -20px rgba(31,41,55,.35);border:1px solid rgba(31,41,55,.08);max-height:320px;display:flex;flex-direction:column;overflow:hidden;animation:fluxIn .18s ease both">
+                        <div style="padding:10px;border-bottom:1px solid rgba(31,41,55,.06);position:relative">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA3B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:22px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                          <input value="{{ f.query }}" onChange="{{ f.onQuery }}" placeholder="Buscar…" style="width:100%;box-sizing:border-box;padding:8px 10px 8px 32px;border:1px solid rgba(31,41,55,.12);border-radius:6px;font-family:'Montserrat';font-size:13px;color:#1F2937;outline:none;background:#F8FAFC" style-focus="border-color:#C9A7FF;background:#fff" />
+                        </div>
+                        <div style="overflow-y:auto;max-height:260px;padding:4px">
+                          <sc-for list="{{ f.filteredOptions }}" as="o" hint-placeholder-count="6">
+                            <button type="button" onClick="{{ o.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;background:{{ o.rowBg }};border:0;padding:9px 12px;border-radius:6px;font-family:'Montserrat';font-size:13px;color:#1F2937;cursor:pointer" style-hover="background:#F1F6EA">
+                              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.label }}</span>
+                              <sc-if value="{{ o.isSelected }}">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7F3E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              </sc-if>
+                            </button>
+                          </sc-for>
+                          <sc-if value="{{ f.emptyResults }}">
+                            <div style="padding:16px;font-family:'Montserrat';font-size:12px;color:#9AA3B2;text-align:center">Sin resultados</div>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
                 </sc-if>
                 <sc-if value="{{ f.isColor }}">
                   <div style="display:flex;align-items:center;gap:12px">
@@ -2046,6 +2069,7 @@ class Component extends DCLogic {
     adminUploading:false,
     confirmModal:null,
     adminSearch:'', adminBrandFilter:'',
+    selectOpen:null, selectQuery:'',
     filtersOpen:false, tIdx:0, news:'', newsOk:false, toast:'', pay:'transfer',
     form:{ nombre:'', apellido:'', tel:'', email:'', doc:'', dir:'', ciudad:'', ref:'' },
     orderId:''
@@ -3202,7 +3226,33 @@ class Component extends DCLogic {
           text: (key, label, ph, extra) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v); return Object.assign({ isText:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetField(key) }, extra||{}); },
           num:  (key, label, ph) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : v; return ({ isNumber:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetFieldNumber(key) }); },
           area: (key, label, ph) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v); return ({ isTextarea:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetField(key) }); },
-          sel:  (key, label, opts) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v); return ({ isSelect:true, label, value: sv, options: opts, onChange: self.adminSetField(key) }); },
+          sel:  (key, label, opts) => {
+            const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v);
+            const openKey = 'sel-' + key;
+            const isOpen = s.selectOpen === openKey;
+            const query = (isOpen ? (s.selectQuery || '') : '').toLowerCase();
+            const currentOpt = opts.find(o => String(o.value) === sv);
+            const filtered = (isOpen ? opts.filter(o => !query || String(o.label).toLowerCase().includes(query)) : []);
+            const filteredOptions = filtered.map(o => ({
+              label: o.label,
+              value: o.value,
+              isSelected: String(o.value) === sv,
+              rowBg: String(o.value) === sv ? '#F1F6EA' : 'transparent',
+              pick: () => { self.setState({ selectOpen:null, selectQuery:'' }); self.adminSetField(key)({ target: { value: o.value } }); }
+            }));
+            return ({
+              isSelect: true, label,
+              value: sv, options: opts, onChange: self.adminSetField(key),
+              currentLabel: currentOpt ? currentOpt.label : (opts[0] && opts[0].label) || '— Elegir —',
+              isOpen,
+              openSelect: () => self.setState({ selectOpen: openKey, selectQuery: '' }),
+              closeSelect: () => self.setState({ selectOpen: null, selectQuery: '' }),
+              query: isOpen ? (s.selectQuery || '') : '',
+              onQuery: e => self.setState({ selectQuery: e.target.value }),
+              filteredOptions,
+              emptyResults: filteredOptions.length === 0
+            });
+          },
           color:(key, label) => ({ isColor:true, label, value: d[key] || '#C3D9AB', onChange: self.adminSetField(key) }),
           tog:  (key, label, onLabel, offLabel) => ({ isToggle:true, label, value: !!d[key], toggleLabel: d[key] ? ('● ' + onLabel) : ('○ ' + offLabel), onToggle: self.adminToggleField(key) }),
           goals:(label) => ({ isGoals:true, label, options: (AD.goals||[]).map(g => ({ label:g.name, selected:((d._goal_ids)||[]).includes(g.id), toggle: self.adminToggleGoal(g.id) })) }),
