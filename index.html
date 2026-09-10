@@ -2077,6 +2077,7 @@ class Component extends DCLogic {
     catQ:'', goal:'todos', catFilter:'todas', brandFilter:'todas', sort:'destacados', maxPrice:350000, onlyPromo:false, onlyStock:false,
     adminBrands: null, adminEditId: null, adminSection:'marcas', adminDraft: null,
     adminData: null, adminEntity: null, adminSubDraft:{ product_id:'', quantity:1, sort_order:0 }, adminSubFaqCat:{ name:'', slug:'', sort_order:0 }, adminLoading:false,
+    publicData: null, publicSource: 'fallback', publicLoading: false,
     authUser:null, authChecked:false, authLoading:false, authError:'', loginEmail:'', loginPass:'',
     adminUploading:false,
     confirmModal:null,
@@ -2194,7 +2195,177 @@ class Component extends DCLogic {
     run();
     setTimeout(run, 400);
   }
-  componentDidMount() { this.boot(); this.initAuth(); }
+  componentDidMount() { this.boot(); this.initAuth(); this.loadPublicData(); }
+
+  async loadPublicData() {
+    const sb = window.fluxSupabase; if (!sb) return;
+    if (this.state.publicLoading) return;
+    this.setState({ publicLoading:true });
+    try {
+      const q = (t, filters) => {
+        let x = sb.from(t).select('*');
+        if (filters) filters.forEach(([col, val]) => { x = x.eq(col, val); });
+        return x.order('sort_order', { ascending:true, nullsFirst:false });
+      };
+      const results = await Promise.all([
+        q('brands',        [['active', true]]),
+        q('categories',    [['active', true]]),
+        q('goals',         [['active', true]]),
+        q('products',      [['active', true]]),
+        sb.from('product_images').select('*').order('sort_order', { ascending:true }),
+        sb.from('product_goals').select('*'),
+        q('ingredients',   [['active', true]]),
+        q('routines',      [['active', true]]),
+        sb.from('routine_items').select('*').order('sort_order', { ascending:true }),
+        sb.from('testimonials').select('*').eq('approved', true).order('sort_order', { ascending:true, nullsFirst:false }),
+        q('faq_categories',[['active', true]]),
+        q('faqs',          [['active', true]])
+      ]);
+      const [brands, categories, goals, products, product_images, product_goals, ingredients, routines, routine_items, testimonials, faq_categories, faqs] = results.map(r => (r && r.data) || []);
+      const anyError = results.find(r => r && r.error);
+      if (anyError) console.warn('[public] partial load error:', anyError.error.message);
+      // Indexes
+      const brandById = {}; brands.forEach(b => { brandById[b.id] = b; });
+      const catById = {}; categories.forEach(c => { catById[c.id] = c; });
+      const goalById = {}; goals.forEach(g => { goalById[g.id] = g; });
+      const imgByProduct = {};
+      product_images.forEach(pi => {
+        if (pi.is_primary) imgByProduct[pi.product_id] = pi.url;
+        else if (!imgByProduct[pi.product_id]) imgByProduct[pi.product_id] = pi.url;
+      });
+      const goalsByProduct = {};
+      product_goals.forEach(pg => {
+        const g = goalById[pg.goal_id]; if (!g) return;
+        (goalsByProduct[pg.product_id] = goalsByProduct[pg.product_id] || []).push(g.slug);
+      });
+      const routineItemsByRoutine = {};
+      routine_items.forEach(ri => { (routineItemsByRoutine[ri.routine_id] = routineItemsByRoutine[ri.routine_id] || []).push(ri); });
+      const publicData = { brands, categories, goals, products, product_images, product_goals, ingredients, routines, routine_items, testimonials, faq_categories, faqs, brandById, catById, goalById, imgByProduct, goalsByProduct, routineItemsByRoutine };
+      const hasData = (products && products.length > 0) || (brands && brands.length > 0);
+      this.setState({ publicData, publicSource: hasData ? 'supabase' : 'fallback', publicLoading:false });
+    } catch (e) {
+      console.warn('[public] load failed:', e && e.message || e);
+      this.setState({ publicSource:'fallback', publicLoading:false });
+    }
+  }
+
+  mapProductFromDB(p) {
+    const pd = this.state.publicData || {};
+    const brand = (pd.brandById || {})[p.brand_id] || null;
+    const cat = (pd.catById || {})[p.category_id] || null;
+    const img = (pd.imgByProduct || {})[p.id];
+    const color = brand ? brand.color : (cat ? cat.color : '#C9A7FF');
+    const tint = (cat && cat.tint_gradient) || ('linear-gradient(160deg,' + color + '22,' + color + '44)');
+    const goals = (pd.goalsByProduct || {})[p.id] || [];
+    return {
+      id: p.slug || String(p.id),
+      _dbId: p.id,
+      name: p.name || '',
+      line: cat ? cat.name : '',
+      cat: cat ? cat.slug : '',
+      brand: brand ? brand.slug : '',
+      color: color, tint: tint,
+      img: img || 'assets/prod-essential.png',
+      price: Number(p.price) || 0,
+      promo: Number(p.promo_price) || 0,
+      badge: p.badge || '',
+      nuevo: p.badge === 'Nuevo',
+      short: p.short_description || '',
+      desc: p.description || '',
+      bene: p.benefits || '',
+      ingr: p.ingredients || '',
+      uso: p.how_to_use || '',
+      pres: p.presentation || '',
+      stock: p.stock == null ? 10 : Number(p.stock),
+      goals: goals,
+      featured: !!p.featured,
+      featuredOrder: p.featured_order || 0
+    };
+  }
+
+  _publicReady() {
+    const pd = this.state.publicData;
+    return !!(pd && ((pd.products && pd.products.length) || (pd.brands && pd.brands.length)));
+  }
+  _prods() {
+    if (!this._publicReady()) return PRODUCTS;
+    const pd = this.state.publicData;
+    if (!this._prodsCache || this._prodsCacheKey !== pd) {
+      this._prodsCache = (pd.products || []).map(p => this.mapProductFromDB(p));
+      this._prodsCacheKey = pd;
+    }
+    return this._prodsCache;
+  }
+  _brands() {
+    if (!this._publicReady()) return BRANDS;
+    const pd = this.state.publicData;
+    return (pd.brands || []).map(b => ({ id: b.slug || String(b.id), name: b.name, country: b.country || '', tagline: b.tagline || '', color: b.color || '#C9A7FF', logo: b.logo_url || '', active: b.active !== false }));
+  }
+  _brandMap() {
+    const m = {}; this._brands().forEach(b => { m[b.id] = b; }); return m;
+  }
+  _cats() {
+    if (!this._publicReady()) return CATS;
+    const pd = this.state.publicData;
+    return (pd.categories || []).map(c => [c.slug || String(c.id), c.name, c.color || '#C9A7FF', c.tint_gradient || ('linear-gradient(160deg,' + (c.color||'#C9A7FF') + '22,' + (c.color||'#C9A7FF') + '44)'), 'assets/prod-essential.png']);
+  }
+  _goals() {
+    if (!this._publicReady()) return GOALS;
+    const pd = this.state.publicData;
+    return (pd.goals || []).map(g => {
+      const col = g.color || '#C9A7FF';
+      let r=201,gg=167,b=255;
+      if (/^#([0-9a-f]{6})$/i.test(col)) { r=parseInt(col.substr(1,2),16); gg=parseInt(col.substr(3,2),16); b=parseInt(col.substr(5,2),16); }
+      return { id: g.slug || String(g.id), name: g.name, color: col, halo: 'rgba(' + r + ',' + gg + ',' + b + ',.2)', desc: g.description || '', extra: '' };
+    });
+  }
+  _ingredients() {
+    const pd = this.state.publicData;
+    if (!pd || !pd.ingredients || !pd.ingredients.length) return null;
+    return pd.ingredients.map((it, i) => ({
+      label: it.name,
+      badge: String(i+1).padStart(2,'0') + ' · ' + (it.kind || 'Ingrediente'),
+      desc: it.description || '',
+      img: it.image_url || 'assets/prod-essential.png'
+    }));
+  }
+  _routines() {
+    const pd = this.state.publicData;
+    if (!pd || !pd.routines || !pd.routines.length) return null;
+    const prodMap = {}; this._prods().forEach(p => { prodMap[p._dbId || p.id] = p; });
+    const items = pd.routineItemsByRoutine || {};
+    return pd.routines.map(r => {
+      const its = (items[r.id] || []).map(ri => {
+        const p = prodMap[ri.product_id]; if (!p) return null;
+        return { name: p.name, color: p.color, price: this.fmt(this.priceOf(p) * (ri.quantity || 1)) };
+      }).filter(Boolean);
+      return {
+        time: r.time_label || '',
+        name: r.name,
+        desc: r.description || '',
+        img: r.image_url || 'assets/life/wellness-breakfast.jpg',
+        items: its,
+        total: this.fmt(Number(r.total_price) || its.reduce((a,x)=>a+0,0)),
+        save: this.fmt(Number(r.savings) || 0),
+        add: () => { (items[r.id] || []).forEach(ri => { const p = prodMap[ri.product_id]; if (p) this.add(p.id, ri.quantity || 1); }); }
+      };
+    });
+  }
+  _testimonials() {
+    const pd = this.state.publicData;
+    if (!pd || !pd.testimonials || !pd.testimonials.length) return null;
+    return pd.testimonials.map(t => ({
+      quote: t.quote || '',
+      name: t.author_name || '',
+      meta: t.author_meta || '',
+      img: t.avatar_url || 'assets/life/wellness-portrait.jpg'
+    }));
+  }
+  _faqs() {
+    const pd = this.state.publicData;
+    if (!pd || !pd.faqs || !pd.faqs.length) return null;
+    return pd.faqs.map(f => ({ q: f.question || '', a: f.answer || '' }));
+  }
   initAuth() {
     const sb = window.fluxSupabase; if (!sb) { this.setState({ authChecked:true }); return; }
     sb.auth.getSession().then(({ data }) => this.applySession(data && data.session)).catch(() => this.setState({ authChecked:true }));
@@ -2502,8 +2673,8 @@ class Component extends DCLogic {
       if (i >= 0) cart[i] = { id, qty: cart[i].qty + n }; else cart.push({ id, qty:n });
       return { cart };
     });
-    const p = PRODUCTS.find(x => x.id === id);
-    this.flash(p.name + ' agregado al carrito');
+    const p = this._prods().find(x => x.id === id);
+    if (p) this.flash(p.name + ' agregado al carrito');
   }
   setQty(id, d) { this.setState(s => ({ cart: s.cart.map(c => c.id === id ? { id, qty: Math.max(1, c.qty + d) } : c) })); }
   remove(id) { this.setState(s => ({ cart: s.cart.filter(c => c.id !== id) })); }
@@ -2513,7 +2684,7 @@ class Component extends DCLogic {
   decorate(p) {
     const self = this;
     const hovered = this.state.hoverCard === p.id;
-    const brand = BRAND_MAP[p.brand] || null;
+    const brand = this._brandMap()[p.brand] || BRAND_MAP[p.brand] || null;
     return Object.assign({}, p, {
       brandName: brand ? brand.name : '',
       brandColor: brand ? brand.color : '#C3D9AB',
@@ -2538,18 +2709,29 @@ class Component extends DCLogic {
     const s = this.state, self = this;
     if (!this._booted) setTimeout(() => this.boot(), 0);
 
+    // Public data sources (Supabase-first, hardcoded fallback)
+    const PRODS = this._prods();
+    const BRDS = this._brands();
+    const GLS = this._goals();
+    const CS = this._cats();
+    const INGS = this._ingredients();       // null → use hardcoded carousel
+    const RTNS = this._routines();          // null → use hardcoded combos
+    const TESTIS = this._testimonials();    // null → use hardcoded testimonials
+    const FQS = this._faqs();               // null → use hardcoded faqs
+
     const desktop = s.w >= 900, mobile = !desktop;
     const cartItems = s.cart.map(c => {
-      const p = PRODUCTS.find(x => x.id === c.id);
+      const p = PRODS.find(x => x.id === c.id);
+      if (!p) return null;
       return { id:p.id, name:p.name, line:p.line, img:p.img, tint:p.tint, qty:c.qty,
         unit:this.fmt(this.priceOf(p)), total:this.fmt(this.priceOf(p) * c.qty),
         inc:() => self.setQty(p.id, 1), dec:() => self.setQty(p.id, -1), remove:() => self.remove(p.id) };
-    });
-    const subtotal = s.cart.reduce((a, c) => a + this.priceOf(PRODUCTS.find(x => x.id === c.id)) * c.qty, 0);
+    }).filter(Boolean);
+    const subtotal = s.cart.reduce((a, c) => { const p = PRODS.find(x => x.id === c.id); return a + (p ? this.priceOf(p) * c.qty : 0); }, 0);
     const freeFrom = this.props.freeShipping ?? 350000;
     const ship = subtotal === 0 || subtotal >= freeFrom ? 0 : 35000;
 
-    let catalog = PRODUCTS.filter(p => {
+    let catalog = PRODS.filter(p => {
       const q = s.catQ.trim().toLowerCase();
       if (q && !(p.name + ' ' + p.line + ' ' + p.short + ' ' + p.ingr).toLowerCase().includes(q)) return false;
       if (s.goal !== 'todos' && !p.goals.includes(s.goal)) return false;
@@ -2564,7 +2746,7 @@ class Component extends DCLogic {
     if (s.sort === 'precio-desc') catalog = catalog.slice().sort((a, b) => this.priceOf(b) - this.priceOf(a));
     if (s.sort === 'nuevos') catalog = catalog.slice().sort((a, b) => (b.nuevo ? 1 : 0) - (a.nuevo ? 1 : 0));
 
-    const pdpRaw = PRODUCTS.find(p => p.id === s.pid) || PRODUCTS[0];
+    const pdpRaw = PRODS.find(p => p.id === s.pid) || PRODS[0] || PRODUCTS[0];
     const pdp = this.decorate(pdpRaw);
     pdp.stockLabel = pdpRaw.stock > 12 ? 'En stock' : 'Últimas unidades';
     const galleryImgs = [pdpRaw.img];
@@ -2584,7 +2766,7 @@ class Component extends DCLogic {
       ['dir', 'Dirección', 'Av. Mcal. López 1234'], ['ref', 'Referencia', 'Edificio, piso, entre calles']
     ];
 
-    const testimonials = [
+    const testimonialsHardcoded = [
       { quote:'Lo sumé a la mañana y el cambio en mi energía fue lo primero que noté.', name:'Camila R.', meta:'Essential · 4 meses de uso', img:'assets/life/wellness-portrait.jpg' },
       { quote:'Me ordenó la rutina. Ahora sé qué tomar y en qué momento del día.', name:'Lucía B.', meta:'Rutina completa · 6 meses', img:'assets/life/wellness-skincare.jpg' },
       { quote:'Mental Balance me acompaña en las semanas más cargadas de trabajo.', name:'Sofía M.', meta:'Mental Balance · 3 meses', img:'assets/life/wellness-yoga.jpg' },
@@ -2601,6 +2783,7 @@ class Component extends DCLogic {
       { quote:'Los probióticos me acompañaron durante todo el tratamiento antibiótico.', name:'Luciana O.', meta:'Probióticos · 4 meses', img:'assets/life/wellness-skincare.jpg' },
       { quote:'El envío llegó a Encarnación en 48 hs. Se agradece el detalle.', name:'Martín G.', meta:'Cliente reciente', img:'assets/life/wellness-active.jpg' }
     ];
+    const testimonials = (TESTIS && TESTIS.length) ? TESTIS : testimonialsHardcoded;
 
     return {
       isHome:s.screen === 'home', isCat:s.screen === 'cat', isPDP:s.screen === 'pdp', isAbout:s.screen === 'about', isFaq:s.screen === 'faq', isAdmin:s.screen === 'admin', isPrivacy:s.screen === 'privacy',
@@ -2621,7 +2804,7 @@ class Component extends DCLogic {
 
       goHome:() => this.nav('home'), goCat:() => this.nav('cat'),
       goGoals:() => this.scrollTo('objetivos'), goScience:() => this.scrollTo('ciencia'), goAbout:() => this.nav('about'), goFaq:() => this.nav('faq'), goAdmin:() => this.nav('admin'), goPrivacy:() => this.nav('privacy'),
-      faqs:[
+      faqs: (FQS && FQS.length) ? FQS : [
         { q:'¿Cuánto tarda mi pedido?', a:'Los envíos dentro de Asunción llegan en 24 hs. A todo Paraguay entre 48 y 72 hs. Recibís seguimiento por WhatsApp.' },
         { q:'¿Cómo elijo mi suplemento?', a:'Filtrá el catálogo por marca u objetivo (energía, foco, equilibrio, glow, digestión, salud femenina), o escribinos por WhatsApp si querés que te asesoremos.' },
         { q:'¿Se pueden combinar varios FLUX?', a:'Sí. Las rutinas Mañana / Día / Noche están pensadas para combinarse. Si tenés dudas, escribinos por WhatsApp y te armamos una combinación personalizada.' },
@@ -2639,17 +2822,22 @@ class Component extends DCLogic {
       toggleMobile:() => this.setState(x => ({ mobileOpen:!x.mobileOpen })), closeMobile:() => this.setState({ mobileOpen:false }), mobileOpen:s.mobileOpen,
       toggleSearch:() => this.setState(x => ({ searchOpen:!x.searchOpen })), closeSearch:() => this.setState({ searchOpen:false }), searchOpen:s.searchOpen,
       searchQ:s.searchQ, onSearch:e => this.setState({ searchQ:e.target.value }),
-      searchResults: PRODUCTS.filter(p => !s.searchQ.trim() || (p.name + ' ' + p.line + ' ' + p.short).toLowerCase().includes(s.searchQ.trim().toLowerCase())).slice(0, 5).map(p => this.decorate(p)),
+      searchResults: PRODS.filter(p => !s.searchQ.trim() || (p.name + ' ' + p.line + ' ' + (p.short||'')).toLowerCase().includes(s.searchQ.trim().toLowerCase())).slice(0, 5).map(p => this.decorate(p)),
 
-      products: PRODUCTS.map(p => this.decorate(p)),
-      goalsShort: GOALS.slice(0, 6).map(g => ({ name:g.name, open:() => { this.setState({ goal:g.id }); this.nav('cat'); } })),
+      products: PRODS.map(p => this.decorate(p)),
+      goalsShort: GLS.slice(0, 6).map(g => ({ name:g.name, open:() => { this.setState({ goal:g.id }); this.nav('cat'); } })),
       openGreens:() => this.openProduct('greens'),
-      featured: (() => { const pool = PRODUCTS.slice(0, 16); const idx = (s.featIdx || 0) * 4; return pool.slice(idx, idx + 4).concat(pool.slice(0, Math.max(0, idx + 4 - pool.length))).map(p => this.decorate(p)); })(),
+      featured: (() => {
+        const feats = PRODS.filter(p => p.featured);
+        const pool = feats.length ? feats.slice().sort((a,b) => (a.featuredOrder||0)-(b.featuredOrder||0)) : PRODS.slice(0, 16);
+        const idx = (s.featIdx || 0) * 4;
+        return pool.slice(idx, idx + 4).concat(pool.slice(0, Math.max(0, idx + 4 - pool.length))).map(p => this.decorate(p));
+      })(),
       featuredAnimName: (s.featIdx || 0) % 2 === 0 ? 'fluxSwapA' : 'fluxSwapB',
       featPrev:() => this.setState(x => ({ featIdx:((x.featIdx || 0) + 3) % 4 })),
       featNext:() => this.setState(x => ({ featIdx:((x.featIdx || 0) + 1) % 4 })),
       carouselItems: (() => {
-        const items = [
+        const itemsHc = [
           { label:'Complejo B', badge:'01 · Complejo B', desc:'Metabolismo energético y sistema nervioso.', img:'assets/catalogo/vitaminas-y-minerales/multivitaminico-y-multimineral/04_multivitaminico_packs_vitaminway-b5fc3afd.png' },
           { label:'Bisglicinato', badge:'02 · Aminoácido', desc:'Alta absorción, sin molestias digestivas.', img:'assets/catalogo/vitaminas-y-minerales/bisglicinato-de-magnesio/03_bisglisinato_magnesio_packs_vitaminway-7deba50c.png' },
           { label:'Ashwagandha', badge:'03 · Adaptógeno', desc:'KSM-66 con evidencia clínica.', img:'assets/catalogo/sueno-stress/relax-dia/02_relax_dia_packs_vitaminway-774ced97.png' },
@@ -2659,6 +2847,7 @@ class Component extends DCLogic {
           { label:'Probióticos', badge:'07 · Cepas activas', desc:'Equilibrio de la flora intestinal.', img:'assets/catalogo/digestion/probioticos-prebiotico/04_probiotico_1k_packs_vitaminway-44060204.png' },
           { label:'Coenzima Q10', badge:'08 · Antioxidante', desc:'Soporte celular y energía mitocondrial.', img:'assets/catalogo/nutricosmetica/coenzima-q10/02_coenzima_q10_packs_vitaminway-38a38666.png' }
         ];
+        const items = (INGS && INGS.length) ? INGS : itemsHc;
         const idx = s.carIdx || 0;
         const len = items.length;
         const itemH = 68;
@@ -2687,7 +2876,7 @@ class Component extends DCLogic {
       })(),
       carouselPause: () => this.setState({ carPaused: true }),
       carouselResume: () => this.setState({ carPaused: false }),
-      goals: GOALS.map(g => ({ name:g.name, color:g.color, halo:g.halo, desc:g.desc, extra:g.extra,
+      goals: GLS.map(g => ({ name:g.name, color:g.color, halo:g.halo, desc:g.desc, extra:g.extra,
         ctxStyle: { position:'relative', overflow:'hidden', transition:'max-height .45s ease, opacity .35s ease', maxHeight: s.hoverGoal === g.id ? '90px' : '0px', opacity: s.hoverGoal === g.id ? 1 : 0 },
         enter:() => this.setState({ hoverGoal:g.id }), leave:() => this.setState({ hoverGoal:null }),
         open:() => { this.setState({ goal:g.id }); this.nav('cat'); } })),
@@ -2734,12 +2923,12 @@ class Component extends DCLogic {
       values:[ { k:'CIENCIA', d:'Decisiones basadas en evidencia.' }, { k:'CERCANÍA', d:'Comunicación simple y humana.' }, { k:'INNOVACIÓN', d:'Una marca que mira adelante.' }, { k:'AUTENTICIDAD', d:'Sin exageraciones.' } ],
       science:[ { n:'01', title:'Ingredientes seleccionados', body:'Cada activo entra a la fórmula por una razón concreta y en dosis útiles.' }, { n:'02', title:'Fórmulas modernas', body:'Formas biodisponibles, pensadas para integrarse a una rutina real.' }, { n:'03', title:'Información clara', body:'Etiquetas legibles: qué contiene, cuánto y para qué.' }, { n:'04', title:'Uso responsable', body:'Los suplementos acompañan; no reemplazan una consulta profesional.' } ],
       essentialFacts:[ { k:'60 cáps.', v:'30 días de uso' }, { k:'Complejo B', v:'Energía diaria' }, { k:'Sin azúcar', v:'Fórmula limpia' }, { k:'Vegano', v:'Cápsula vegetal' } ],
-      essentialPrice:this.fmt(this.priceOf(PRODUCTS[0])),
+      essentialPrice:this.fmt(this.priceOf((PRODS.find(p => p.id === 'essential') || PRODS[0] || PRODUCTS[0]))),
       addEssential:() => this.add('essential', 1), openEssential:() => this.openProduct('essential'),
 
       goMarcas:() => this.scrollTo('marcas'),
 
-      combos:[
+      combos: (RTNS && RTNS.length) ? RTNS : [
         { time:'Mañana', name:'Rutina Energía', desc:'Para arrancar el día con base y foco.', img:'assets/life/wellness-breakfast.jpg', items:[{ name:'Essential', color:'#FF83A7', price:this.fmt(159000) }, { name:'Mental Balance', color:'#AFC8FF', price:this.fmt(189000) }], total:this.fmt(313000), save:this.fmt(35000), add:() => { this.add('essential', 1); this.add('mental', 1); } },
         { time:'Durante el día', name:'Rutina Activa', desc:'Rendimiento y recuperación en días de entreno.', img:'assets/life/wellness-active.jpg', items:[{ name:'Active', color:'#C9A7FF', price:this.fmt(195000) }, { name:'Daily Greens', color:'#C9A7FF', price:this.fmt(210000) }], total:this.fmt(365000), save:this.fmt(40000), add:() => { this.add('active', 1); this.add('greens', 1); } },
         { time:'Noche', name:'Rutina Equilibrio', desc:'Descanso, digestión y bienestar femenino.', img:'assets/life/wellness-water.jpg', items:[{ name:'Women', color:'#FFD6E8', price:this.fmt(169000) }, { name:'Digestive', color:'#8FE9F4', price:this.fmt(175000) }], total:this.fmt(309000), save:this.fmt(35000), add:() => { this.add('women', 1); this.add('digestive', 1); } }
@@ -2771,18 +2960,18 @@ class Component extends DCLogic {
       maxPrice:s.maxPrice, maxPriceLabel:this.fmt(s.maxPrice), onMax:e => this.setState({ maxPrice:Number(e.target.value) }),
       onlyPromo:s.onlyPromo, togglePromo:() => this.setState(x => ({ onlyPromo:!x.onlyPromo })),
       onlyStock:s.onlyStock, toggleStock:() => this.setState(x => ({ onlyStock:!x.onlyStock })),
-      cats:CATS.map(c => ({ name:c[1], color:c[2], open:() => { this.setState({ catFilter:c[0], goal:'todos' }); this.nav('cat'); } })),
-      catChips:[['todas', 'Todas las categorías', '#1F2937']].concat(CATS).map(c => ({ name:c[1], color:c[2],
-        count: c[0] === 'todas' ? PRODUCTS.length : PRODUCTS.filter(p => p.cat === c[0]).length,
+      cats:CS.map(c => ({ name:c[1], color:c[2], open:() => { this.setState({ catFilter:c[0], goal:'todos' }); this.nav('cat'); } })),
+      catChips:[['todas', 'Todas las categorías', '#1F2937']].concat(CS).map(c => ({ name:c[1], color:c[2],
+        count: c[0] === 'todas' ? PRODS.length : PRODS.filter(p => p.cat === c[0]).length,
         bg: s.catFilter === c[0] ? '#FDF2F7' : 'transparent', weight: s.catFilter === c[0] ? 600 : 500,
         pick:() => this.setState({ catFilter:c[0] }) })),
       clearFilters:() => this.setState({ catQ:'', goal:'todos', catFilter:'todas', brandFilter:'todas', maxPrice:350000, onlyPromo:false, onlyStock:false, sort:'destacados' }),
-      brands: (s.adminBrands || BRANDS).filter(b => b.active !== false).map(b => ({ id:b.id, name:b.name, country:b.country, tagline:b.tagline, color:b.color, logo:b.logo, count: PRODUCTS.filter(p => p.brand === b.id).length, open:() => { this.setState({ brandFilter:b.id, catFilter:'todas', goal:'todos' }); this.nav('cat'); } })),
-      brandChips:[{ id:'todas', name:'Todas las marcas', color:'#1F2937' }].concat((s.adminBrands || BRANDS).filter(b => b.active !== false).map(b => ({ id:b.id, name:b.name, color:b.color }))).map(b => ({ name:b.name, color:b.color,
-        count: b.id === 'todas' ? PRODUCTS.length : PRODUCTS.filter(p => p.brand === b.id).length,
+      brands: (s.adminBrands || BRDS).filter(b => b.active !== false).map(b => ({ id:b.id, name:b.name, country:b.country, tagline:b.tagline, color:b.color, logo:b.logo, count: PRODS.filter(p => p.brand === b.id).length, open:() => { this.setState({ brandFilter:b.id, catFilter:'todas', goal:'todos' }); this.nav('cat'); } })),
+      brandChips:[{ id:'todas', name:'Todas las marcas', color:'#1F2937' }].concat((s.adminBrands || BRDS).filter(b => b.active !== false).map(b => ({ id:b.id, name:b.name, color:b.color }))).map(b => ({ name:b.name, color:b.color,
+        count: b.id === 'todas' ? PRODS.length : PRODS.filter(p => p.brand === b.id).length,
         bg: (s.brandFilter || 'todas') === b.id ? '#F1F6EA' : 'transparent', weight: (s.brandFilter || 'todas') === b.id ? 600 : 500,
         pick:() => this.setState({ brandFilter:b.id }) })),
-      goalChips:[{ id:'todos', name:'Todos' }].concat(GOALS).map(g => ({ name:g.name,
+      goalChips:[{ id:'todos', name:'Todos' }].concat(GLS).map(g => ({ name:g.name,
         bg: s.goal === g.id ? '#C9A7FF' : '#fff', fg:'#1F2937',
         pick:() => this.setState({ goal:g.id }) })),
 
@@ -2799,7 +2988,7 @@ class Component extends DCLogic {
         { when:'Mediodía', title:'Antes de la actividad', body:'Si entrenás, sumá la línea Activa 30 minutos antes.', halo:'rgba(201,167,255,.3)' },
         { when:'Noche', title:'Para el descanso', body:'Equilibrio y digestión funcionan bien al final del día.', halo:'rgba(183,201,255,.32)' }
       ],
-      related:PRODUCTS.filter(p => p.id !== pdpRaw.id).slice(0, 3).map(p => this.decorate(p)),
+      related:PRODS.filter(p => p.id !== pdpRaw.id).slice(0, 3).map(p => this.decorate(p)),
 
       cartOpen:s.cartOpen, openCart:() => this.setState({ cartOpen:true, mobileOpen:false }), closeCart:() => this.setState({ cartOpen:false }),
       goCatFromCart:() => this.nav('cat'),
@@ -2815,7 +3004,7 @@ class Component extends DCLogic {
         const id = 'FLX-' + Math.floor(1000 + Math.random() * 8999);
         const f = s.form || {};
         const lines = s.cart.map(c => {
-          const p = PRODUCTS.find(x => x.id === c.id); if (!p) return '';
+          const p = PRODS.find(x => x.id === c.id); if (!p) return '';
           return '• ' + p.name + ' x' + c.qty + ' — ' + this.fmt(this.priceOf(p) * c.qty);
         }).filter(Boolean).join('\n');
         const msg =
@@ -2838,7 +3027,7 @@ class Component extends DCLogic {
       },
       orderId:s.orderId, orderName:s.form.nombre || 'gracias por tu compra',
 
-      quick: s.quick ? this.decorate(PRODUCTS.find(p => p.id === s.quick)) : null,
+      quick: s.quick ? (() => { const p = PRODS.find(p => p.id === s.quick); return p ? this.decorate(p) : null; })() : null,
       closeQuick:() => this.setState({ quick:null }),
       toast:s.toast,
       confirmOpen: !!s.confirmModal,
