@@ -570,9 +570,9 @@
           <h2 style="font-family:'Montserrat';font-weight:500;font-size:clamp(24px,3.2vw,38px);letter-spacing:-.028em;margin:0;color:#F8FAFC">Comprá <span style="font-weight:300;font-style:italic;color:#C3D9AB">según lo que necesitás</span></h2>
           <p style="font-family:'Montserrat';font-size:14px;line-height:1.6;color:rgba(248,250,252,.65);margin:10px 0 0;max-width:52ch">Un objetivo, una fórmula. Elegí por lo que te acompaña hoy.</p>
         </div>
-        <div data-goal-grid="1" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));grid-auto-rows:clamp(190px,20vw,240px);gap:clamp(10px,1.2vw,16px)">
+        <div data-goal-grid="1" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:clamp(190px,20vw,260px);gap:clamp(8px,1vw,14px)">
           <sc-for list="{{ goalsGrid }}" as="g" hint-placeholder-count="6">
-            <button onClick="{{ g.open }}" style="position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:{{ g.bg }};transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:{{ g.bgHover }}">
+            <button onClick="{{ g.open }}" style="grid-column:span {{ g.span }};position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:{{ g.bg }};transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:{{ g.bgHover }}">
               <sc-if value="{{ g.hasImage }}">
                 <img src="{{ g.image }}" alt="{{ g.name }}" style="position:absolute;right:-6%;top:50%;transform:translateY(-50%);width:64%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
               </sc-if>
@@ -2797,16 +2797,21 @@ class Component extends DCLogic {
 
       products: PRODS.map(p => this.decorate(p)),
       goalsShort: GLS.slice(0, 6).map(g => ({ name:g.name, open:() => { this.setState({ goal:g.id }); this.nav('cat'); } })),
-      goalsGrid: GLS.map((g, i) => ({
-        name: g.name,
-        color: g.color,
-        image: g.image || '',
-        hasImage: !!g.image,
-        bg: g.bg || 'rgba(201,167,255,.14)',
-        bgHover: g.bgHover || 'rgba(201,167,255,.24)',
-        label: (['Esencial','Mental','Activa','Digestiva','Glow','Women','Sport','Bienestar'][i] || g.name).toUpperCase(),
-        open: () => { this.setState({ goal:g.id }); this.nav('cat'); }
-      })),
+      goalsGrid: (() => {
+        // Pattern editorial 5+4+3 / 3+4+5 — se cicla para más items
+        const spans = [5, 4, 3, 3, 4, 5];
+        return GLS.map((g, i) => ({
+          name: g.name,
+          color: g.color,
+          image: g.image || '',
+          hasImage: !!g.image,
+          bg: g.bg || 'rgb(244,238,251)',
+          bgHover: g.bgHover || 'rgb(233,222,247)',
+          span: spans[i % 6],
+          label: (['Esencial','Mental','Activa','Digestiva','Glow','Women','Sport','Bienestar'][i] || g.name).toUpperCase(),
+          open: () => { this.setState({ goal:g.id }); this.nav('cat'); }
+        }));
+      })(),
       openGreens:() => this.openProduct('greens'),
       featured: (() => {
         const feats = PRODS.filter(p => p.featured);
