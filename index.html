@@ -2280,7 +2280,14 @@ class Component extends DCLogic {
       const col = g.color || '#C9A7FF';
       let r=201,gg=167,b=255;
       if (/^#([0-9a-f]{6})$/i.test(col)) { r=parseInt(col.substr(1,2),16); gg=parseInt(col.substr(3,2),16); b=parseInt(col.substr(5,2),16); }
-      return { id: g.slug || String(g.id), name: g.name, color: col, halo: 'rgba(' + r + ',' + gg + ',' + b + ',.2)', desc: g.description || '', extra: '', image: g.image_url || '', bg: 'rgba(' + r + ',' + gg + ',' + b + ',.14)', bgHover: 'rgba(' + r + ',' + gg + ',' + b + ',.24)' };
+      // Pastel opaco (mezcla con blanco al 82%) para que se vea igual sobre cualquier fondo
+      const pR = Math.round(r + (255 - r) * 0.82);
+      const pG = Math.round(gg + (255 - gg) * 0.82);
+      const pB = Math.round(b + (255 - b) * 0.82);
+      const hR = Math.round(r + (255 - r) * 0.72);
+      const hG = Math.round(gg + (255 - gg) * 0.72);
+      const hB = Math.round(b + (255 - b) * 0.72);
+      return { id: g.slug || String(g.id), name: g.name, color: col, halo: 'rgba(' + r + ',' + gg + ',' + b + ',.2)', desc: g.description || '', extra: '', image: g.image_url || '', bg: 'rgb(' + pR + ',' + pG + ',' + pB + ')', bgHover: 'rgb(' + hR + ',' + hG + ',' + hB + ')' };
     });
   }
   _ingredients() {
