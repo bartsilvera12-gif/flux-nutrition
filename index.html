@@ -1242,6 +1242,11 @@
                 <sc-if value="{{ cell.isSwatch }}">
                   <div style="width:26px;height:26px;border-radius:6px;background:{{ cell.value }};border:1px solid rgba(31,41,55,.1)"></div>
                 </sc-if>
+                <sc-if value="{{ cell.isImg }}">
+                  <div style="width:44px;height:44px;border-radius:8px;background:{{ cell.bg }};border:1px solid rgba(31,41,55,.08);overflow:hidden;display:flex;align-items:center;justify-content:center;padding:3px;box-sizing:border-box">
+                    <img src="{{ cell.value }}" alt="" style="max-width:100%;max-height:100%;object-fit:contain;display:block" />
+                  </div>
+                </sc-if>
                 <sc-if value="{{ cell.isText }}">
                   <div style="font-weight:{{ cell.weight }};line-height:1.35">{{ cell.value }}</div>
                   <sc-if value="{{ cell.sub }}"><div style="font-size:11.5px;color:#9AA3B2;margin-top:2px">{{ cell.sub }}</div></sc-if>
@@ -2922,7 +2927,7 @@ class Component extends DCLogic {
             cellActions(g, 'goals')
           ]}));
         } else if (section === 'productos') {
-          tableGridCols = '50px minmax(0,2fr) minmax(0,1.2fr) 90px 70px 90px 90px 200px';
+          tableGridCols = '64px minmax(0,2fr) minmax(0,1.2fr) 90px 70px 90px 90px 200px';
           tableColumns = [{label:''},{label:'Producto'},{label:'Marca / Cat.'},{label:'Precio'},{label:'Stock'},{label:'Destacado'},{label:'Activo'},{label:'Acciones',align:'right'}];
           const _prods = (AD.products || []); totalCount = _prods.length;
           const brandFilter = s.adminBrandFilter || '';
@@ -2937,8 +2942,12 @@ class Component extends DCLogic {
           shownCount = _fProds.length;
           tableRows = _fProds.map(p => {
             const img = (AD.productImageByProduct || {})[p.id];
+            const brandColor = (brandById[p.brand_id] && brandById[p.brand_id].color) || '#F8FAFC';
+            const imgCell = img && img.url
+              ? { isImg:true, value: img.url, bg:'#F8FAFC', align:'left' }
+              : cellSwatch(brandColor);
             return { cells:[
-              img ? { isText:true, value:'', weight:400, align:'left' } : cellSwatch((brandById[p.brand_id] && brandById[p.brand_id].color) || '#F8FAFC'),
+              imgCell,
               cellText(p.name, { sub:'slug: ' + (p.slug || '') }),
               cellText(((brandById[p.brand_id] && brandById[p.brand_id].name) || '—') + ' · ' + ((catById[p.category_id] && catById[p.category_id].name) || '—'), { weight:400 }),
               cellText(fmtGs(p.promo_price || p.price), { weight:600 }),
