@@ -1326,6 +1326,23 @@
                     </sc-for>
                   </div>
                 </sc-if>
+                <sc-if value="{{ f.isGallery }}">
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+                    <sc-for list="{{ f.slots }}" as="slot">
+                      <div style="aspect-ratio:1;position:relative;border-radius:10px;overflow:hidden;background:#F8FAFC;border:1px dashed rgba(31,41,55,.2)">
+                        <sc-if value="{{ slot.hasImage }}">
+                          <img src="{{ slot.url }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />
+                          <button type="button" onClick="{{ slot.onClear }}" style="position:absolute;top:6px;right:6px;background:rgba(184,58,107,.92);color:#fff;border:0;border-radius:999px;width:22px;height:22px;font-size:14px;line-height:1;cursor:pointer;font-weight:600">×</button>
+                        </sc-if>
+                        <label style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:'Montserrat';font-size:11.5px;font-weight:600;color:#1F2937;background:rgba(255,255,255,0);transition:background .2s" style-hover="background:rgba(255,255,255,.8)">
+                          <input type="file" accept="image/*" onChange="{{ slot.onChange }}" style="display:none" />
+                          <sc-if value="{{ slot.hasImage }}"><span style="opacity:0"></span></sc-if>
+                          <sc-if value="{{ !slot.hasImage }}"><span>+ Agregar</span></sc-if>
+                        </label>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
                 <sc-if value="{{ f.isFile }}">
                   <div style="display:flex;gap:14px;align-items:flex-start">
                     <sc-if value="{{ f.hasImage }}">
@@ -2240,10 +2257,17 @@ class Component extends DCLogic {
       const catById = {}; categories.forEach(c => { catById[c.id] = c; });
       const goalById = {}; goals.forEach(g => { goalById[g.id] = g; });
       const imgByProduct = {};
+      const galleryByProduct = {};
       product_images.forEach(pi => {
         if (pi.is_primary) imgByProduct[pi.product_id] = pi.url;
         else if (!imgByProduct[pi.product_id]) imgByProduct[pi.product_id] = pi.url;
       });
+      product_images
+        .filter(pi => !pi.is_primary)
+        .sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
+        .forEach(pi => {
+          (galleryByProduct[pi.product_id] = galleryByProduct[pi.product_id] || []).push(pi.url);
+        });
       const goalsByProduct = {};
       product_goals.forEach(pg => {
         const g = goalById[pg.goal_id]; if (!g) return;
@@ -2251,7 +2275,7 @@ class Component extends DCLogic {
       });
       const routineItemsByRoutine = {};
       routine_items.forEach(ri => { (routineItemsByRoutine[ri.routine_id] = routineItemsByRoutine[ri.routine_id] || []).push(ri); });
-      const publicData = { brands, categories, goals, products, product_images, product_goals, ingredients, routines, routine_items, testimonials, faq_categories, faqs, brandById, catById, goalById, imgByProduct, goalsByProduct, routineItemsByRoutine };
+      const publicData = { brands, categories, goals, products, product_images, product_goals, ingredients, routines, routine_items, testimonials, faq_categories, faqs, brandById, catById, goalById, imgByProduct, galleryByProduct, goalsByProduct, routineItemsByRoutine };
       const hasData = (products && products.length > 0) || (brands && brands.length > 0);
       this.setState({ publicData, publicSource: hasData ? 'supabase' : 'fallback', publicLoading:false });
     } catch (e) {
@@ -2290,7 +2314,9 @@ class Component extends DCLogic {
       stock: p.stock == null ? 10 : Number(p.stock),
       goals: goals,
       featured: !!p.featured,
-      featuredOrder: p.featured_order || 0
+      featuredOrder: p.featured_order || 0,
+      faq: p.product_faq || '',
+      gallery: ((pd.galleryByProduct || {})[p.id]) || []
     };
   }
 
@@ -2493,6 +2519,14 @@ class Component extends DCLogic {
     await sb.from('product_images').delete().eq('product_id', productId).eq('is_primary', true);
     await sb.from('product_images').insert({ product_id: productId, url, is_primary: true, sort_order: 0 });
   }
+  async saveProductGallery(productId, urls) {
+    if (!productId) return;
+    const sb = window.fluxSupabase;
+    // Wipe non-primary and re-insert
+    await sb.from('product_images').delete().eq('product_id', productId).eq('is_primary', false);
+    const rows = (urls || []).map((u, i) => u ? { product_id: productId, url: u, is_primary: false, sort_order: i + 1 } : null).filter(Boolean);
+    if (rows.length) await sb.from('product_images').insert(rows);
+  }
   async saveProductGoals(productId, goalIds) {
     if (!productId) return;
     const sb = window.fluxSupabase;
@@ -2518,13 +2552,32 @@ class Component extends DCLogic {
       self.setState(x => ({ adminUploading:false, adminDraft: Object.assign({}, x.adminDraft, { [field]: url }) }));
     };
   }
+  adminUploadGallerySlot(field, index) {
+    const self = this;
+    return async (e) => {
+      const file = e && e.target && e.target.files && e.target.files[0]; if (!file) return;
+      const sb = window.fluxSupabase; if (!sb) { self.flash('Supabase no cargó'); return; }
+      self.setState({ adminUploading: true });
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = 'products/gallery-' + Date.now() + '-' + Math.random().toString(36).slice(2,8) + '.' + ext;
+      const { error } = await sb.storage.from('product-images').upload(path, file, { cacheControl: '31536000', upsert: false, contentType: file.type });
+      if (error) { self.setState({ adminUploading:false }); self.flash('Error al subir: ' + error.message); return; }
+      const { data } = sb.storage.from('product-images').getPublicUrl(path);
+      const url = data && data.publicUrl;
+      self.setState(x => {
+        const cur = Array.isArray(x.adminDraft && x.adminDraft[field]) ? x.adminDraft[field].slice() : ['','','',''];
+        cur[index] = url;
+        return { adminUploading:false, adminDraft: Object.assign({}, x.adminDraft, { [field]: cur }) };
+      });
+    };
+  }
   adminNewRow() {
     const entity = this.state.adminSection;
     const templates = {
       marcas: { slug:'', name:'', country:'Argentina', tagline:'', color:'#C3D9AB', logo_url:'', active:true, sort_order:0 },
       categorias: { slug:'', name:'', color:'#C9A7FF', description:'', tint_gradient:'', sort_order:0, active:true },
       objetivos: { slug:'', name:'', color:'#C9A7FF', description:'', image_url:'', sort_order:0, active:true },
-      productos: { slug:'', sku:'', name:'', brand_id:'', category_id:'', short_description:'', description:'', ingredients:'', how_to_use:'', presentation:'', price:0, promo_price:null, currency:'PYG', stock:0, stock_min:5, badge:'', featured:false, featured_order:null, active:true, sort_order:0, _image_url:'', _goal_ids:[] },
+      productos: { slug:'', sku:'', name:'', brand_id:'', category_id:'', short_description:'', description:'', benefits:'', ingredients:'', how_to_use:'', presentation:'', product_faq:'', price:0, promo_price:null, currency:'PYG', stock:0, stock_min:5, badge:'', featured:false, featured_order:null, active:true, sort_order:0, _image_url:'', _gallery_urls:['','','',''], _goal_ids:[] },
       ingredientes: { slug:'', name:'', kind:'', description:'', color:'#C9A7FF', image_url:'', active:true, sort_order:0 },
       rutinas: { slug:'', name:'', time_label:'Mañana', description:'', image_url:'', total_price:0, savings:0, sort_order:0, active:true },
       testimonios: { quote:'', author_name:'—', author_meta:null, product_id:null, avatar_url:null, rating:null, approved:false, featured:false, sort_order:0 },
@@ -2537,9 +2590,13 @@ class Component extends DCLogic {
     const entity = this.state.adminSection;
     const d = Object.assign({}, row);
     if (entity === 'productos') {
-      const img = ((this.state.adminData || {}).productImageByProduct || {})[row.id];
+      const AD = this.state.adminData || {};
+      const img = (AD.productImageByProduct || {})[row.id];
       d._image_url = img ? img.url : '';
-      d._goal_ids = ((this.state.adminData || {}).product_goals || []).filter(pg => pg.product_id === row.id).map(pg => pg.goal_id);
+      d._goal_ids = (AD.product_goals || []).filter(pg => pg.product_id === row.id).map(pg => pg.goal_id);
+      // Gallery = non-primary product_images ordenadas por sort_order
+      const gallery = (AD.product_images || []).filter(pi => pi.product_id === row.id && !pi.is_primary).sort((a,b) => (a.sort_order||0) - (b.sort_order||0)).map(pi => pi.url).slice(0, 4);
+      d._gallery_urls = [gallery[0]||'', gallery[1]||'', gallery[2]||'', gallery[3]||''];
     }
     this.setState({ adminDraft: d, adminEditId: row.id, adminEntity: entity });
   }
@@ -2598,6 +2655,7 @@ class Component extends DCLogic {
     const imgUrl = d._image_url; const goalIds = d._goal_ids;
     const extra = entity === 'productos' ? async (saved) => {
       if (imgUrl !== undefined) await this.saveProductImage(saved.id, imgUrl);
+      if (Array.isArray(d._gallery_urls)) await this.saveProductGallery(saved.id, d._gallery_urls);
       if (goalIds !== undefined) await this.saveProductGoals(saved.id, goalIds);
     } : null;
     const saved = await this.adminSave(table, row, extra);
@@ -2774,14 +2832,14 @@ class Component extends DCLogic {
     const pdpRaw = PRODS.find(p => p.id === s.pid) || PRODS[0] || PRODUCTS[0];
     const pdp = this.decorate(pdpRaw);
     pdp.stockLabel = pdpRaw.stock > 12 ? 'En stock' : 'Últimas unidades';
-    const galleryImgs = [pdpRaw.img];
+    const galleryImgs = [pdpRaw.img].concat(Array.isArray(pdpRaw.gallery) ? pdpRaw.gallery : []).filter(Boolean);
     const blocks = [
       { k:'descripcion', title:'Descripción', body:pdpRaw.desc },
       { k:'beneficios', title:'Beneficios', body:pdpRaw.bene },
       { k:'ingredientes', title:'Ingredientes', body:pdpRaw.ingr },
       { k:'uso', title:'Modo de uso', body:pdpRaw.uso },
       { k:'presentacion', title:'Presentación', body:pdpRaw.pres },
-      { k:'faq', title:'Preguntas frecuentes', body:'¿Se puede combinar con otras líneas FLUX? Sí, las fórmulas están pensadas para convivir en una misma rutina. Ante dudas, consultá con un profesional de la salud.' }
+      { k:'faq', title:'Preguntas frecuentes', body: pdpRaw.faq || '¿Se puede combinar con otras líneas FLUX? Sí, las fórmulas están pensadas para convivir en una misma rutina. Ante dudas, consultá con un profesional de la salud.' }
     ];
 
     const fieldDefs = [
@@ -3296,7 +3354,22 @@ class Component extends DCLogic {
             const sel = ((d._goal_ids)||[]).includes(g.id);
             return { label:g.name, selected:sel, bg: sel ? '#C9A7FF' : '#F8FAFC', border: sel ? '#C9A7FF' : 'rgba(31,41,55,.14)', color: sel ? '#1F2937' : '#6B7280', weight: sel ? '700' : '500', toggle: self.adminToggleGoal(g.id) };
           }) }),
-          file: (key, label) => ({ isFile:true, label, value: d[key] || '', hasImage: !!d[key], uploading: !!s.adminUploading, uploadLabel: s.adminUploading ? 'Subiendo…' : (d[key] ? 'Cambiar imagen' : 'Subir imagen'), onChange: self.adminUploadImage(key), onClear: () => self.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [key]: '' }) })) })
+          file: (key, label) => ({ isFile:true, label, value: d[key] || '', hasImage: !!d[key], uploading: !!s.adminUploading, uploadLabel: s.adminUploading ? 'Subiendo…' : (d[key] ? 'Cambiar imagen' : 'Subir imagen'), onChange: self.adminUploadImage(key), onClear: () => self.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [key]: '' }) })) }),
+          gallery: (key, label) => {
+            const arr = Array.isArray(d[key]) ? d[key] : ['','','',''];
+            const norm = [0,1,2,3].map(i => arr[i] || '');
+            return {
+              isGallery: true, label,
+              slots: norm.map((url, i) => ({
+                idx: i,
+                url,
+                hasImage: !!url,
+                uploadLabel: s.adminUploading ? 'Subiendo…' : (url ? 'Cambiar' : 'Agregar'),
+                onChange: self.adminUploadGallerySlot(key, i),
+                onClear: () => self.setState(x => { const cur = (x.adminDraft && Array.isArray(x.adminDraft[key])) ? x.adminDraft[key].slice() : ['','','','']; cur[i] = ''; return { adminDraft: Object.assign({}, x.adminDraft, { [key]: cur }) }; })
+              }))
+            };
+          }
         };
 
         let drawerFields = [];
@@ -3331,15 +3404,18 @@ class Component extends DCLogic {
           F.sel('category_id', 'Categoría *', catOpts),
           F.area('short_description', 'Descripción corta', '1 línea para las cards'),
           F.area('description', 'Descripción completa'),
+          F.area('benefits', 'Beneficios'),
           F.area('ingredients', 'Ingredientes'),
           F.area('how_to_use', 'Modo de uso'),
           F.text('presentation', 'Presentación', '60 cápsulas · 30 días'),
+          F.area('product_faq', 'Preguntas frecuentes (opcional)', 'Si vacío, muestra el genérico.'),
           F.num('price', 'Precio (Gs) *', '0'),
           F.num('promo_price', 'Precio promo (Gs)', 'Vacío = sin promo'),
           F.num('stock', 'Stock', '0'),
           F.num('stock_min', 'Stock mínimo', '5'),
           F.text('badge', 'Badge', 'Nuevo / Más vendido / Promo'),
           F.file('_image_url', 'Imagen principal'),
+          F.gallery('_gallery_urls', 'Imágenes extra (hasta 4)'),
           F.goals('Objetivos'),
           F.num('featured_order', 'Orden destacados'),
           F.num('sort_order', 'Orden', '0'),
