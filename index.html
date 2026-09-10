@@ -2357,7 +2357,15 @@ class Component extends DCLogic {
   adminSetField(field) {
     const self = this;
     return (e) => {
-      const v = e && e.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e;
+      let v;
+      if (e && e.target) {
+        v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      } else if (e == null || typeof e === 'string' || typeof e === 'number' || typeof e === 'boolean') {
+        v = e;
+      } else {
+        // objeto raro sin .target → ignoramos para no romper el draft
+        return;
+      }
       // Especial: si el field es _use_product_img, copiamos la imagen del producto elegido a image_url
       if (field === '_use_product_img' && v) {
         const img = ((self.state.adminData || {}).productImageByProduct || {})[v];
@@ -3016,10 +3024,10 @@ class Component extends DCLogic {
         const timeOpts  = ['Mañana','Durante el día','Noche','Antes de entrenar','Después de entrenar'].map(v => ({ value:v, label:v }));
 
         const F = {
-          text: (key, label, ph, extra) => Object.assign({ isText:true, label, value: d[key] == null ? '' : d[key], placeholder: ph || '', onChange: self.adminSetField(key) }, extra||{}),
-          num:  (key, label, ph) => ({ isNumber:true, label, value: d[key] == null ? '' : d[key], placeholder: ph || '', onChange: self.adminSetFieldNumber(key) }),
-          area: (key, label, ph) => ({ isTextarea:true, label, value: d[key] == null ? '' : d[key], placeholder: ph || '', onChange: self.adminSetField(key) }),
-          sel:  (key, label, opts) => ({ isSelect:true, label, value: d[key] == null ? '' : d[key], options: opts, onChange: self.adminSetField(key) }),
+          text: (key, label, ph, extra) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v); return Object.assign({ isText:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetField(key) }, extra||{}); },
+          num:  (key, label, ph) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : v; return ({ isNumber:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetFieldNumber(key) }); },
+          area: (key, label, ph) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v); return ({ isTextarea:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetField(key) }); },
+          sel:  (key, label, opts) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v); return ({ isSelect:true, label, value: sv, options: opts, onChange: self.adminSetField(key) }); },
           color:(key, label) => ({ isColor:true, label, value: d[key] || '#C3D9AB', onChange: self.adminSetField(key) }),
           tog:  (key, label, onLabel, offLabel) => ({ isToggle:true, label, value: !!d[key], toggleLabel: d[key] ? ('● ' + onLabel) : ('○ ' + offLabel), onToggle: self.adminToggleField(key) }),
           goals:(label) => ({ isGoals:true, label, options: (AD.goals||[]).map(g => ({ label:g.name, selected:((d._goal_ids)||[]).includes(g.id), toggle: self.adminToggleGoal(g.id) })) }),
