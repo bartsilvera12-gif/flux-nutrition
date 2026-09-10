@@ -2248,7 +2248,22 @@ class Component extends DCLogic {
     const ok = await this.askConfirm({ title:'Eliminar registro', message:'Esta acción no se puede deshacer.', confirmLabel:'Eliminar' });
     if (!ok) return;
     const { error } = await sb.from(table).delete().eq('id', id);
-    if (error) { this.flash('Error: ' + error.message); return; }
+    if (error) {
+      // Foreign key violation → mensaje amigable + sugerencia de pausar
+      if (error.code === '23503' || /foreign key/i.test(error.message || '')) {
+        const m = (error.message || '').match(/on table "([^"]+)"/);
+        const child = m ? m[1] : 'otros registros';
+        await this.askConfirm({
+          title: 'No se puede eliminar',
+          message: 'Este registro está siendo usado por ' + child + '. Reasigná o eliminá primero los registros vinculados. Como alternativa, podés pausarlo (toggle Estado) para ocultarlo sin borrar el histórico.',
+          confirmLabel: 'Entendido',
+          cancelLabel: 'Cerrar',
+          danger: false
+        });
+        return;
+      }
+      this.flash('Error: ' + error.message); return;
+    }
     this.flash('Eliminado');
     await this.loadAdminData();
   }
