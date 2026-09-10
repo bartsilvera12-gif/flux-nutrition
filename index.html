@@ -1291,7 +1291,7 @@
                   <input type="number" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none" />
                 </sc-if>
                 <sc-if value="{{ f.isTextarea }}">
-                  <textarea onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" rows="3" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none;resize:vertical;min-height:70px">{{ f.value }}</textarea>
+                  <textarea value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" rows="3" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none;resize:vertical;min-height:70px"></textarea>
                 </sc-if>
                 <sc-if value="{{ f.isSelect }}">
                   <select value="{{ f.value }}" onChange="{{ f.onChange }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none;background:#fff">
