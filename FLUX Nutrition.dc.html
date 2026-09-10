@@ -572,7 +572,7 @@
         </div>
         <div data-goal-grid="1" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:clamp(190px,20vw,260px);gap:clamp(8px,1vw,14px)">
           <sc-for list="{{ goalsGrid }}" as="g" hint-placeholder-count="6">
-            <button onClick="{{ g.open }}" style="grid-column:span {{ g.span }};position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:{{ g.bg }};transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:{{ g.bgHover }}">
+            <button onClick="{{ g.open }}" style="grid-column:span {{ g.span }};position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:{{ g.bg }};transition:filter .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);filter:brightness(0.92)">
               <sc-if value="{{ g.hasImage }}">
                 <img src="{{ g.image }}" alt="{{ g.name }}" style="position:absolute;right:-6%;top:50%;transform:translateY(-50%);width:64%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
               </sc-if>
