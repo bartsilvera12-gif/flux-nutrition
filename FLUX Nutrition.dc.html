@@ -1159,11 +1159,34 @@
           <input value="{{ adminSearchQuery }}" onChange="{{ onAdminSearch }}" placeholder="{{ adminSearchPlaceholder }}" style="width:100%;padding:11px 14px 11px 40px;border:1px solid rgba(31,41,55,.14);border-radius:8px;font-family:'Montserrat';font-size:13px;color:#1F2937;outline:none;background:#fff;box-sizing:border-box" style-focus="border-color:#C9A7FF" />
         </div>
         <sc-if value="{{ adminShowBrandFilter }}">
-          <select value="{{ adminBrandFilterValue }}" onChange="{{ onAdminBrandFilter }}" style="padding:11px 34px 11px 14px;border:1px solid rgba(31,41,55,.14);border-radius:8px;font-family:'Montserrat';font-size:13px;color:#1F2937;outline:none;background:#fff;cursor:pointer">
-            <sc-for list="{{ adminBrandFilterOptions }}" as="o">
-              <option value="{{ o.value }}">{{ o.label }}</option>
-            </sc-for>
-          </select>
+          <div style="position:relative;min-width:200px">
+            <button type="button" onClick="{{ openBrandFilter }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:11px 14px;border:1px solid rgba(31,41,55,.14);border-radius:8px;font-family:'Montserrat';font-size:13px;color:#1F2937;background:#fff;cursor:pointer;text-align:left" style-hover="border-color:#C9A7FF">
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ brandFilterLabel }}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <sc-if value="{{ brandFilterOpen }}">
+              <div onClick="{{ closeBrandFilter }}" style="position:fixed;inset:0;z-index:130;background:transparent"></div>
+              <div style="position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:131;background:#fff;border-radius:12px;box-shadow:0 24px 50px -20px rgba(31,41,55,.35);border:1px solid rgba(31,41,55,.08);max-height:320px;display:flex;flex-direction:column;overflow:hidden;animation:fluxIn .18s ease both">
+                <div style="padding:10px;border-bottom:1px solid rgba(31,41,55,.06);position:relative">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA3B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:22px;top:50%;transform:translateY(-50%);pointer-events:none"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                  <input value="{{ brandFilterQuery }}" onChange="{{ onBrandFilterQuery }}" placeholder="Buscar…" style="width:100%;box-sizing:border-box;padding:8px 10px 8px 32px;border:1px solid rgba(31,41,55,.12);border-radius:6px;font-family:'Montserrat';font-size:13px;color:#1F2937;outline:none;background:#F8FAFC" style-focus="border-color:#C9A7FF;background:#fff" />
+                </div>
+                <div style="overflow-y:auto;max-height:260px;padding:4px">
+                  <sc-for list="{{ brandFilterList }}" as="o" hint-placeholder-count="6">
+                    <button type="button" onClick="{{ o.pick }}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;background:{{ o.rowBg }};border:0;padding:9px 12px;border-radius:6px;font-family:'Montserrat';font-size:13px;color:#1F2937;cursor:pointer" style-hover="background:#F1F6EA">
+                      <span>{{ o.label }}</span>
+                      <sc-if value="{{ o.isSelected }}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B7F3E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </sc-if>
+                    </button>
+                  </sc-for>
+                  <sc-if value="{{ brandFilterEmpty }}">
+                    <div style="padding:16px;font-family:'Montserrat';font-size:12px;color:#9AA3B2;text-align:center">Sin resultados</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+          </div>
         </sc-if>
         <div style="font-family:'Montserrat';font-size:12px;color:#9AA3B2">{{ adminResultsLabel }}</div>
       </div>
@@ -1252,7 +1275,7 @@
                   <input value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none" />
                 </sc-if>
                 <sc-if value="{{ f.isNumber }}">
-                  <input type="number" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none" />
+                  <input type="text" inputmode="numeric" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none" />
                 </sc-if>
                 <sc-if value="{{ f.isTextarea }}">
                   <textarea value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" rows="3" style="padding:11px 13px;border:1px solid rgba(31,41,55,.14);border-radius:6px;font-family:'Montserrat';font-size:13.5px;color:#1F2937;outline:none;resize:vertical;min-height:70px"></textarea>
@@ -2543,7 +2566,14 @@ class Component extends DCLogic {
       self.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: v }) }));
     };
   }
-  adminSetFieldNumber(field) { return (e) => { const v = e && e.target ? e.target.value : e; this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: v === '' ? null : Number(v) }) })); }; }
+  adminSetFieldNumber(field) {
+    return (e) => {
+      const raw = e && e.target ? e.target.value : e;
+      const digits = String(raw == null ? '' : raw).replace(/[^\d]/g, '');
+      const num = digits === '' ? null : Number(digits);
+      this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: num }) }));
+    };
+  }
   adminToggleField(field) { return () => this.setState(x => ({ adminDraft: Object.assign({}, x.adminDraft, { [field]: !x.adminDraft[field] }) })); }
   adminToggleGoal(goalId) { return () => this.setState(x => { const cur = (x.adminDraft && x.adminDraft._goal_ids) || []; const has = cur.includes(goalId); return { adminDraft: Object.assign({}, x.adminDraft, { _goal_ids: has ? cur.filter(g => g !== goalId) : cur.concat([goalId]) }) }; }); }
   async saveAdminDraft() {
@@ -3224,7 +3254,14 @@ class Component extends DCLogic {
 
         const F = {
           text: (key, label, ph, extra) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v); return Object.assign({ isText:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetField(key) }, extra||{}); },
-          num:  (key, label, ph) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : v; return ({ isNumber:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetFieldNumber(key) }); },
+          num:  (key, label, ph) => {
+            const v = d[key];
+            let sv;
+            if (v == null || v === '' || typeof v === 'object') sv = '';
+            else if (typeof v === 'number') sv = v.toLocaleString('es-PY').replace(/,/g, '.');
+            else sv = String(v);
+            return ({ isNumber:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetFieldNumber(key) });
+          },
           area: (key, label, ph) => { const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v); return ({ isTextarea:true, label, value: sv, placeholder: ph || '', onChange: self.adminSetField(key) }); },
           sel:  (key, label, opts) => {
             const v = d[key]; const sv = (v == null || typeof v === 'object') ? '' : String(v);
@@ -3371,6 +3408,35 @@ class Component extends DCLogic {
           adminBrandFilterValue: s.adminBrandFilter || '',
           adminBrandFilterOptions: [{ value:'', label:'Todas las marcas' }].concat((AD.brands||[]).map(b => ({ value:b.id, label:b.name }))),
           onAdminBrandFilter: e => self.setState({ adminBrandFilter: e.target.value }),
+          brandFilterOpen: s.selectOpen === 'brand-filter',
+          openBrandFilter: () => self.setState({ selectOpen:'brand-filter', selectQuery:'' }),
+          closeBrandFilter: () => self.setState({ selectOpen:null, selectQuery:'' }),
+          brandFilterQuery: s.selectOpen === 'brand-filter' ? (s.selectQuery || '') : '',
+          onBrandFilterQuery: e => self.setState({ selectQuery: e.target.value }),
+          brandFilterLabel: (() => {
+            const bf = s.adminBrandFilter || '';
+            if (!bf) return 'Todas las marcas';
+            const b = (AD.brands || []).find(x => x.id === bf);
+            return b ? b.name : 'Todas las marcas';
+          })(),
+          brandFilterList: (() => {
+            if (s.selectOpen !== 'brand-filter') return [];
+            const q = (s.selectQuery || '').toLowerCase();
+            const bf = s.adminBrandFilter || '';
+            const opts = [{ value:'', label:'Todas las marcas' }].concat((AD.brands||[]).map(b => ({ value:b.id, label:b.name })));
+            return opts.filter(o => !q || o.label.toLowerCase().includes(q)).map(o => ({
+              label: o.label,
+              isSelected: o.value === bf,
+              rowBg: o.value === bf ? '#F1F6EA' : 'transparent',
+              pick: () => self.setState({ adminBrandFilter: o.value, selectOpen:null, selectQuery:'' })
+            }));
+          })(),
+          brandFilterEmpty: s.selectOpen === 'brand-filter' && (() => {
+            const q = (s.selectQuery || '').toLowerCase();
+            if (!q) return false;
+            const opts = [{ label:'Todas las marcas' }].concat((AD.brands||[]).map(b => ({ label:b.name })));
+            return !opts.some(o => o.label.toLowerCase().includes(q));
+          })(),
           adminResultsLabel: (q || (section === 'productos' && s.adminBrandFilter)) ? (shownCount + ' de ' + totalCount) : (totalCount + ' registros'),
           adminIsNew: s.adminEditId === '__new__',
           adminSaveLabel: s.adminEditId === '__new__' ? 'Crear' : 'Guardar cambios',
