@@ -570,60 +570,19 @@
           <h2 style="font-family:'Montserrat';font-weight:500;font-size:clamp(24px,3.2vw,38px);letter-spacing:-.028em;margin:0;color:#F8FAFC">Comprá <span style="font-weight:300;font-style:italic;color:#C3D9AB">según lo que necesitás</span></h2>
           <p style="font-family:'Montserrat';font-size:14px;line-height:1.6;color:rgba(248,250,252,.65);margin:10px 0 0;max-width:52ch">Un objetivo, una fórmula. Elegí por lo que te acompaña hoy.</p>
         </div>
-        <div data-goal-grid="1" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:clamp(190px,20vw,260px);gap:clamp(8px,1vw,14px)">
-          <button onClick="{{ goals.0.open }}" style="grid-column:span 5;position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:#FFEBEF;transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:#FFDDE4">
-            <img src="assets/catalogo/energia-y-rendimiento-fisico/cafeina-energy/04_cafeina_energy_packs_vitaminway-8fec079e.png" alt="Energía" style="position:absolute;right:-6%;top:50%;transform:translateY(-50%);width:64%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
-            <span aria-hidden="true" style="position:absolute;top:16px;left:16px;font-family:'Montserrat';font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#1F2937;display:inline-flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#FF83A7"></span>Esencial</span>
-            <div style="position:absolute;left:20px;right:20px;bottom:20px;color:#1F2937">
-              <div style="font-family:'Montserrat';font-size:clamp(24px,2.8vw,36px);font-weight:500;letter-spacing:-.018em;line-height:1">Energía</div>
-              <div style="font-family:'Montserrat';font-size:12px;color:#1F2937;opacity:.6;margin-top:10px">Ver productos →</div>
-            </div>
-          </button>
-
-          <button onClick="{{ goals.1.open }}" style="grid-column:span 4;position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:#EAF0FA;transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:#DAE3F4">
-            <img src="assets/catalogo/memoria/cognitive-dha/02_cognitive_dha_packs_vitaminway-944c902b.png" alt="Foco" style="position:absolute;right:-4%;top:50%;transform:translateY(-50%);width:62%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
-            <span aria-hidden="true" style="position:absolute;top:14px;left:14px;font-family:'Montserrat';font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#1F2937;display:inline-flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#AFC8FF"></span>Mental</span>
-            <div style="position:absolute;left:16px;right:16px;bottom:16px;color:#1F2937">
-              <div style="font-family:'Montserrat';font-size:22px;font-weight:500;letter-spacing:-.015em;line-height:1">Foco</div>
-              <div style="font-family:'Montserrat';font-size:12px;color:#1F2937;opacity:.6;margin-top:10px">Ver productos →</div>
-            </div>
-          </button>
-
-          <button onClick="{{ goals.2.open }}" style="grid-column:span 3;position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:#F0EAF7;transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:#E6DBF1">
-            <img src="assets/catalogo/vitaminas-y-minerales/citrato-de-magnesio-sleep-calm/02_citrato_de_magnesio_sleep_calm_packs_vitaminway-3de20bc1.png" alt="Equilibrio" style="position:absolute;right:-8%;top:50%;transform:translateY(-50%);width:80%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
-            <span aria-hidden="true" style="position:absolute;top:14px;left:14px;font-family:'Montserrat';font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#1F2937;display:inline-flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#C9A7FF"></span>Activa</span>
-            <div style="position:absolute;left:16px;right:16px;bottom:16px;color:#1F2937">
-              <div style="font-family:'Montserrat';font-size:22px;font-weight:500;letter-spacing:-.015em;line-height:1">Equilibrio</div>
-              <div style="font-family:'Montserrat';font-size:12px;color:#1F2937;opacity:.6;margin-top:10px">Ver productos →</div>
-            </div>
-          </button>
-
-          <button onClick="{{ goals.3.open }}" style="grid-column:span 3;position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:#E5F5F7;transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:#D0EDF1">
-            <img src="assets/catalogo/digestion/probioticos-prebiotico/04_probiotico_1k_packs_vitaminway-44060204.png" alt="Digestión" style="position:absolute;right:-8%;top:50%;transform:translateY(-50%);width:80%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
-            <span aria-hidden="true" style="position:absolute;top:14px;left:14px;font-family:'Montserrat';font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#1F2937;display:inline-flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#8FE9F4"></span>Digestiva</span>
-            <div style="position:absolute;left:16px;right:16px;bottom:16px;color:#1F2937">
-              <div style="font-family:'Montserrat';font-size:22px;font-weight:500;letter-spacing:-.015em;line-height:1">Digestión</div>
-              <div style="font-family:'Montserrat';font-size:12px;color:#1F2937;opacity:.6;margin-top:10px">Ver productos →</div>
-            </div>
-          </button>
-
-          <button onClick="{{ goals.4.open }}" style="grid-column:span 4;position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:#EEEEF7;transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:#E0E1EE">
-            <img src="assets/catalogo/nutricosmetica/colageno-beauty/04_colageno_beuty-9d7a0fec.png" alt="Glow" style="position:absolute;right:-4%;top:50%;transform:translateY(-50%);width:62%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
-            <span aria-hidden="true" style="position:absolute;top:14px;left:14px;font-family:'Montserrat';font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#1F2937;display:inline-flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#B7C9FF"></span>Glow</span>
-            <div style="position:absolute;left:16px;right:16px;bottom:16px;color:#1F2937">
-              <div style="font-family:'Montserrat';font-size:22px;font-weight:500;letter-spacing:-.015em;line-height:1">Glow</div>
-              <div style="font-family:'Montserrat';font-size:12px;color:#1F2937;opacity:.6;margin-top:10px">Ver productos →</div>
-            </div>
-          </button>
-
-          <button onClick="{{ goals.5.open }}" style="grid-column:span 5;position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:#FBEBF0;transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:#F8DBE4">
-            <img src="assets/catalogo/mujer/arandano-ury/02_arandano_ury_packs_vitaminway-263ccce7.png" alt="Salud femenina" style="position:absolute;right:-6%;top:50%;transform:translateY(-50%);width:60%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
-            <span aria-hidden="true" style="position:absolute;top:16px;left:16px;font-family:'Montserrat';font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#1F2937;display:inline-flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:#FFD6E8"></span>Women</span>
-            <div style="position:absolute;left:18px;right:18px;bottom:18px;color:#1F2937">
-              <div style="font-family:'Montserrat';font-size:clamp(22px,2.4vw,28px);font-weight:500;letter-spacing:-.015em;line-height:1">Salud femenina</div>
-              <div style="font-family:'Montserrat';font-size:12px;color:#1F2937;opacity:.6;margin-top:10px">Ver productos →</div>
-            </div>
-          </button>
+        <div data-goal-grid="1" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));grid-auto-rows:clamp(190px,20vw,240px);gap:clamp(10px,1.2vw,16px)">
+          <sc-for list="{{ goalsGrid }}" as="g" hint-placeholder-count="6">
+            <button onClick="{{ g.open }}" style="position:relative;overflow:hidden;border:0;padding:0;cursor:pointer;text-align:left;background:{{ g.bg }};transition:background .3s,transform .35s cubic-bezier(.2,.7,.2,1)" style-hover="transform:translateY(-4px);background:{{ g.bgHover }}">
+              <sc-if value="{{ g.hasImage }}">
+                <img src="{{ g.image }}" alt="{{ g.name }}" style="position:absolute;right:-6%;top:50%;transform:translateY(-50%);width:64%;height:auto;max-height:105%;object-fit:contain;object-position:right center" />
+              </sc-if>
+              <span aria-hidden="true" style="position:absolute;top:16px;left:16px;font-family:'Montserrat';font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#1F2937;display:inline-flex;align-items:center;gap:8px"><span style="width:6px;height:6px;border-radius:50%;background:{{ g.color }}"></span>{{ g.label }}</span>
+              <div style="position:absolute;left:20px;right:20px;bottom:20px;color:#1F2937">
+                <div style="font-family:'Montserrat';font-size:clamp(22px,2.4vw,30px);font-weight:500;letter-spacing:-.018em;line-height:1">{{ g.name }}</div>
+                <div style="font-family:'Montserrat';font-size:12px;color:#1F2937;opacity:.6;margin-top:10px">Ver productos →</div>
+              </div>
+            </button>
+          </sc-for>
         </div>
         <style>
           @media (max-width:900px){
@@ -2321,7 +2280,7 @@ class Component extends DCLogic {
       const col = g.color || '#C9A7FF';
       let r=201,gg=167,b=255;
       if (/^#([0-9a-f]{6})$/i.test(col)) { r=parseInt(col.substr(1,2),16); gg=parseInt(col.substr(3,2),16); b=parseInt(col.substr(5,2),16); }
-      return { id: g.slug || String(g.id), name: g.name, color: col, halo: 'rgba(' + r + ',' + gg + ',' + b + ',.2)', desc: g.description || '', extra: '' };
+      return { id: g.slug || String(g.id), name: g.name, color: col, halo: 'rgba(' + r + ',' + gg + ',' + b + ',.2)', desc: g.description || '', extra: '', image: g.image_url || '', bg: 'rgba(' + r + ',' + gg + ',' + b + ',.14)', bgHover: 'rgba(' + r + ',' + gg + ',' + b + ',.24)' };
     });
   }
   _ingredients() {
@@ -2510,7 +2469,7 @@ class Component extends DCLogic {
     const templates = {
       marcas: { slug:'', name:'', country:'Argentina', tagline:'', color:'#C3D9AB', logo_url:'', active:true, sort_order:0 },
       categorias: { slug:'', name:'', color:'#C9A7FF', description:'', tint_gradient:'', sort_order:0, active:true },
-      objetivos: { slug:'', name:'', color:'#C9A7FF', description:'', sort_order:0, active:true },
+      objetivos: { slug:'', name:'', color:'#C9A7FF', description:'', image_url:'', sort_order:0, active:true },
       productos: { slug:'', sku:'', name:'', brand_id:'', category_id:'', short_description:'', description:'', ingredients:'', how_to_use:'', presentation:'', price:0, promo_price:null, currency:'PYG', stock:0, stock_min:5, badge:'', featured:false, featured_order:null, active:true, sort_order:0, _image_url:'', _goal_ids:[] },
       ingredientes: { slug:'', name:'', kind:'', description:'', color:'#C9A7FF', image_url:'', active:true, sort_order:0 },
       rutinas: { slug:'', name:'', time_label:'Mañana', description:'', image_url:'', total_price:0, savings:0, sort_order:0, active:true },
@@ -2831,6 +2790,16 @@ class Component extends DCLogic {
 
       products: PRODS.map(p => this.decorate(p)),
       goalsShort: GLS.slice(0, 6).map(g => ({ name:g.name, open:() => { this.setState({ goal:g.id }); this.nav('cat'); } })),
+      goalsGrid: GLS.map((g, i) => ({
+        name: g.name,
+        color: g.color,
+        image: g.image || '',
+        hasImage: !!g.image,
+        bg: g.bg || 'rgba(201,167,255,.14)',
+        bgHover: g.bgHover || 'rgba(201,167,255,.24)',
+        label: (['Esencial','Mental','Activa','Digestiva','Glow','Women','Sport','Bienestar'][i] || g.name).toUpperCase(),
+        open: () => { this.setState({ goal:g.id }); this.nav('cat'); }
+      })),
       openGreens:() => this.openProduct('greens'),
       featured: (() => {
         const feats = PRODS.filter(p => p.featured);
@@ -3249,6 +3218,8 @@ class Component extends DCLogic {
           F.text('name', 'Nombre *', 'Ej: Energía'),
           F.area('description', 'Descripción'),
           F.color('color', 'Color'),
+          F.file('image_url', 'Imagen (podés reutilizar la de un producto)'),
+          F.sel('_use_product_img', 'O tomar de un producto', [{ value:'', label:'— No, subir propia —' }].concat((AD.products||[]).map(p => ({ value:p.id, label:p.name })))),
           F.num('sort_order', 'Orden', '0'),
           F.tog('active', 'Estado', 'Activo', 'Pausado')
         ];
