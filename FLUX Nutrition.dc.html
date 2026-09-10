@@ -798,6 +798,11 @@
                   <span style="display:inline-flex;align-items:center;gap:8px;font-family:'Montserrat';font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#6B7280;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:{{ b.color }}"></span>{{ b.country }}</span>
                   <span style="font-family:'Montserrat';font-size:11px;color:#9AA3B2;font-weight:500">{{ b.count }} productos</span>
                 </div>
+                <sc-if value="{{ b.logo }}">
+                  <div style="height:56px;display:flex;align-items:center;justify-content:flex-start;margin-bottom:12px">
+                    <img src="{{ b.logo }}" alt="{{ b.name }}" style="max-height:100%;max-width:70%;object-fit:contain;display:block" />
+                  </div>
+                </sc-if>
                 <div style="font-family:'Montserrat';font-size:22px;font-weight:600;letter-spacing:-.02em;color:#1F2937;line-height:1.1">{{ b.name }}</div>
                 <p style="font-family:'Montserrat';font-size:13px;line-height:1.55;color:#6B7280;margin:10px 0 0;font-weight:400">{{ b.tagline }}</p>
               </div>
