@@ -1,0 +1,50 @@
+# =====================================================================
+# FLUX Nutrition · .htaccess (Hostinger / Apache)
+# =====================================================================
+
+# Enable rewrite engine
+RewriteEngine On
+
+# =====================================================================
+# 1. SPA routing — /admin (y /admin/*) sirve index.html
+# =====================================================================
+RewriteRule ^admin/?$              index.html  [L]
+RewriteRule ^admin/(.*)$           index.html  [L]
+
+# Si más adelante querés que otras rutas también resuelvan al SPA
+# (ej. /productos, /producto/xxx, /about), descomentá:
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteRule ^.*$ index.html [L]
+
+# =====================================================================
+# 2. Cache headers
+# =====================================================================
+<IfModule mod_headers.c>
+  # Assets versionados: 1 año inmutable
+  <FilesMatch "^assets/.*\.(png|jpg|jpeg|webp|svg|css|js|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # index.html: no cachear
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# =====================================================================
+# 3. Compresión Gzip
+# =====================================================================
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# =====================================================================
+# 4. Charset
+# =====================================================================
+AddDefaultCharset UTF-8
+
+# =====================================================================
+# 5. Errores personalizados (opcional)
+# =====================================================================
+# ErrorDocument 404 /index.html
