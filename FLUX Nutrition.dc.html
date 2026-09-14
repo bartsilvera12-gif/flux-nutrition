@@ -733,17 +733,24 @@
           </div>
         </div>
 
-        <div style="position:relative;overflow:hidden;min-height:400px">
+        <div data-brand-hero-img="1" style="position:relative;overflow:hidden;min-height:400px">
           <img src="assets/life/brand-editorial.jpg" alt="FLUX filosofía" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(1.05)" />
           <div aria-hidden="true" style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,26,30,.4) 0%,rgba(15,26,30,0) 40%)"></div>
-          <div style="position:absolute;right:clamp(20px,3vw,32px);top:clamp(20px,3vw,32px);z-index:2;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);padding:10px 14px;font-family:'Montserrat';font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#0F1A1E">FLUX · Vol. 01</div>
-          <div style="position:absolute;right:clamp(20px,3vw,32px);bottom:clamp(20px,3vw,32px);z-index:2;background:rgba(15,26,30,.72);backdrop-filter:blur(10px);padding:14px 18px;color:#F8FAFC;max-width:280px">
+          <div data-brand-hero-vol="1" style="position:absolute;right:clamp(20px,3vw,32px);top:clamp(20px,3vw,32px);z-index:2;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);padding:10px 14px;font-family:'Montserrat';font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#0F1A1E">FLUX · Vol. 01</div>
+          <div data-brand-hero-manifesto="1" style="position:absolute;right:clamp(20px,3vw,32px);bottom:clamp(20px,3vw,32px);z-index:2;background:rgba(15,26,30,.72);backdrop-filter:blur(10px);padding:14px 18px;color:#F8FAFC;max-width:280px">
             <div style="font-family:'Montserrat';font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#8FE9F4;margin-bottom:6px">Manifesto</div>
             <p style="margin:0;font-family:'Montserrat';font-size:13px;line-height:1.4;color:rgba(248,250,252,.9);font-weight:400">Fórmulas modernas que se integran a tu rutina real. Sin ruido.</p>
           </div>
         </div>
       </div>
-      <style>@media (max-width:900px){[data-brand-hero]{grid-template-columns:1fr!important;grid-template-rows:auto 320px}}</style>
+      <style>
+        @media (max-width:900px){
+          [data-brand-hero]{grid-template-columns:1fr!important;grid-template-rows:auto auto}
+          [data-brand-hero-img]{min-height:360px!important;height:360px}
+          [data-brand-hero-vol]{top:14px!important;right:14px!important;padding:8px 12px!important;font-size:9.5px!important}
+          [data-brand-hero-manifesto]{left:14px!important;right:14px!important;bottom:14px!important;max-width:none!important;padding:12px 14px!important}
+        }
+      </style>
     </section>
 
     <section id="marcas" style="padding:clamp(60px,8vw,116px) 0;background:#F8FAFC">
